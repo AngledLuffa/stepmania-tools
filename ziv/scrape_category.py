@@ -138,6 +138,17 @@ def simfile_already_downloaded(simfileid, dest):
     return False
 
 
+def invalid_directory_structure(zip):
+    names = zip.namelist()
+    dirs = [x for x in names if x.endswith("/")]
+    # The expected directory structure is exactly one subdirectory
+    if len(dirs) != 1:
+        return True
+    # All files have to be in that directory, except for the directory itself
+    if any(not x.startswith(dirs[0]) for x in names):
+        return True
+    return False
+
 
 def get_simfile(simfileid, link, dest, extract):
     filename = os.path.join(dest, "sim%s.zip" % simfileid)
@@ -151,7 +162,10 @@ def get_simfile(simfileid, link, dest, extract):
         zip = None
         try:
             zip = zipfile.ZipFile(filename)
-            zip.extractall()
+            if invalid_directory_structure(zip):
+                print "Invalid directory structure in %s" % filename
+            else:
+                zip.extractall()
         except (zipfile.BadZipfile, IOError) as e:
             print "Unable to extract %s" % filename
         if zip is not None:
@@ -161,7 +175,7 @@ def get_simfile(simfileid, link, dest, extract):
 if __name__ == "__main__":
     # TODO: 
     # 29287 does not unzip correctly, zipfile.BadZipfile
-    # 29303 does not have an inner folder.  Look out for this.
+    # 29303 does not have an inner folder.  Can we fix this?
     # 29308 also barfed - got an IOError
     # TODO features:
     # Check for already extracted simfiles, not just zips
