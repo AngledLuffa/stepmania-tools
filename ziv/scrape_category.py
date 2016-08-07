@@ -56,6 +56,12 @@ class DownloadHTMLParser(HTMLParser):
 
 
 def get_content(url, split=True):
+    """
+    Opens the URL, downloads the page.
+
+    Respects encoding if possible.
+    If split=True, splits the page on newlines.
+    """
     connection = urllib2.urlopen(url)
     encoding = connection.headers.getparam('charset')
     if encoding is not None:
@@ -78,6 +84,9 @@ def get_category(category):
     """
     url = "http://zenius-i-vanisher.com/v5.2/viewsimfilecategory.php?categoryid=%s" % category
 
+    print "Downloading category from:"
+    print url
+
     content = get_content(url)
     link_lines = [x for x in content if "viewsimfile.php?simfileid" in x]
 
@@ -86,6 +95,8 @@ def get_category(category):
         parser = CategoryHTMLParser()
         parser.feed(i)
         results.append((parser.simfileid, parser.title))
+
+    print "Found %d simfiles" % len(results)
 
     return results
 
@@ -118,11 +129,18 @@ def filter_titles(titles, prefix):
     return [x for x in titles if x[1].startswith(prefix)]
 
 
-def get_simfile(simfileid, link):
-    filename = "sim%s.zip" % simfileid
+def simfile_already_downloaded(simfileid, dest):
+    filename = os.path.join(dest, "sim%s.zip" % simfileid)
     if os.path.exists(filename):
-        print "File already exists: %s" % filename
-        return
+        print "Zip file already exists: %s" % filename
+        return True
+    return False
+
+
+
+def get_simfile(simfileid, link, dest):
+    filename = os.path.join(dest, "sim%s.zip" % simfileid)
+    print "Downloading %s to %s" % (link, filename)
     content = get_content(link, split=False)
     fout = open(filename, "wb")
     fout.write(content)
@@ -137,13 +155,19 @@ if __name__ == "__main__":
                            help="Which category number to download")
     argparser.add_argument("--prefix", default="[Mid Speed]",
                            help="Only keep files with this prefix")
+    argparser.add_argument("--dest", default="",
+                           help="Where to put the simfiles.  Defaults to CWD")
     args = argparser.parse_args()
 
     titles = get_category(args.category)
     if args.prefix:
         titles = filter_titles(titles, args.prefix)
 
+    count = 0
     for simfile in titles:
         link = get_file_link(simfile[0])
-        get_simfile(simfile[0], link)
+        if not simfile_already_downloaded(simfile[0], args.dest):
+            count = count + 1
+            get_simfile(simfile[0], link, args.dest)
 
+    print "Downloaded %d simfiles" % count
