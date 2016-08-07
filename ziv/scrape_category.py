@@ -3,6 +3,7 @@ import codecs
 import os
 import sys
 import urllib2
+import zipfile
 from HTMLParser import HTMLParser
 
 # create a subclass and override the handler methods
@@ -138,13 +139,18 @@ def simfile_already_downloaded(simfileid, dest):
 
 
 
-def get_simfile(simfileid, link, dest):
+def get_simfile(simfileid, link, dest, extract):
     filename = os.path.join(dest, "sim%s.zip" % simfileid)
     print "Downloading %s to %s" % (link, filename)
     content = get_content(link, split=False)
     fout = open(filename, "wb")
     fout.write(content)
     fout.close()
+
+    if extract:
+        zip = zipfile.ZipFile(filename)
+        zip.extractall()
+        zip.close()
 
 
 if __name__ == "__main__":
@@ -157,6 +163,16 @@ if __name__ == "__main__":
                            help="Only keep files with this prefix")
     argparser.add_argument("--dest", default="",
                            help="Where to put the simfiles.  Defaults to CWD")
+
+
+    argparser.add_argument("--extract", dest="extract",
+                           action="store_true",
+                           help="Extract the zip files")
+    argparser.add_argument("--no-extract", dest="extract",
+                           action="store_false",
+                           help="Don't extract the zip files")
+    argparser.set_defaults(extract=True)
+
     args = argparser.parse_args()
 
     titles = get_category(args.category)
@@ -168,6 +184,6 @@ if __name__ == "__main__":
         link = get_file_link(simfile[0])
         if not simfile_already_downloaded(simfile[0], args.dest):
             count = count + 1
-            get_simfile(simfile[0], link, args.dest)
+            get_simfile(simfile[0], link, args.dest, args.extract)
 
     print "Downloaded %d simfiles" % count
