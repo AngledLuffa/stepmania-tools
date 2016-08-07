@@ -138,6 +138,27 @@ def simfile_already_downloaded(simfileid, dest):
     return False
 
 
+def valid_zipfile_directory_structure(filename):
+    """
+    Open the given file, then check its directory structure.
+
+    Useful for testing from the interpreter or command line, for
+    example, as you can pass in a filename instead of opening the zip
+    yourself.
+    """
+    zip = None
+    try:
+        zip = zipfile.ZipFile(filename)
+        result = valid_directory_structure(zip=zip)
+        zip.close()
+        return result
+    except (zipfile.BadZipfile, IOError) as e:
+        return False
+    finally:
+        if zip != None:
+            zip.close()
+
+
 def valid_directory_structure(zip):
     names = zip.namelist()
     if len(names) == 0:
