@@ -163,6 +163,11 @@ if __name__ == "__main__":
     # 29287 does not unzip correctly, zipfile.BadZipfile
     # 29303 does not have an inner folder.  Look out for this.
     # 29308 also barfed - got an IOError
+    # TODO features:
+    # Check for already extracted simfiles, not just zips
+    # Add a flag for dates to search for
+    # Search all directories for the files, in case you are
+    #   rearranging the files after downloading
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = argparse.ArgumentParser(description='Download category')
