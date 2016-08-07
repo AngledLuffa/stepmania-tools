@@ -140,12 +140,25 @@ def simfile_already_downloaded(simfileid, dest):
 
 def invalid_directory_structure(zip):
     names = zip.namelist()
-    dirs = [x for x in names if x.endswith("/")]
-    # The expected directory structure is exactly one subdirectory
-    if len(dirs) != 1:
+    if len(names) == 0:
         return True
-    # All files have to be in that directory, except for the directory itself
-    if any(not x.startswith(dirs[0]) for x in names):
+    dirs = [x for x in names if x.endswith("/")]
+    if len(dirs) > 1:
+        return True
+    elif len(dirs) == 1:
+        directory = dirs[0]
+    else:
+        # No directory was zipped into the archive, but maybe all of
+        # the files are in the same directory anyway
+        slash_index = names[0].find("/")
+        # if there is no "/" then this file is not in a subdirectory,
+        # which is an invalid directory structure
+        if slash_index < 0:
+            return True
+        directory = names[0][:slash_index]
+    # All files have to be in the same subdirectory directory.
+    # Obviously the subdirectory itself with startswith(itself)
+    if any(not x.startswith(directory) for x in names):
         return True
     return False
 
