@@ -148,12 +148,21 @@ def get_simfile(simfileid, link, dest, extract):
     fout.close()
 
     if extract:
-        zip = zipfile.ZipFile(filename)
-        zip.extractall()
-        zip.close()
+        zip = None
+        try:
+            zip = zipfile.ZipFile(filename)
+            zip.extractall()
+        except (zipfile.BadZipfile, IOError) as e:
+            print "Unable to extract %s" % filename
+        if zip is not None:
+            zip.close()
 
 
 if __name__ == "__main__":
+    # TODO: 
+    # 29287 does not unzip correctly, zipfile.BadZipfile
+    # 29303 does not have an inner folder.  Look out for this.
+    # 29308 also barfed - got an IOError
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = argparse.ArgumentParser(description='Download category')
