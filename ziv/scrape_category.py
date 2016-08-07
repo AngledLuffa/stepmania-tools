@@ -138,13 +138,13 @@ def simfile_already_downloaded(simfileid, dest):
     return False
 
 
-def invalid_directory_structure(zip):
+def valid_directory_structure(zip):
     names = zip.namelist()
     if len(names) == 0:
-        return True
+        return False
     dirs = [x for x in names if x.endswith("/")]
     if len(dirs) > 1:
-        return True
+        return False
     elif len(dirs) == 1:
         directory = dirs[0]
     else:
@@ -154,13 +154,13 @@ def invalid_directory_structure(zip):
         # if there is no "/" then this file is not in a subdirectory,
         # which is an invalid directory structure
         if slash_index < 0:
-            return True
+            return False
         directory = names[0][:slash_index]
     # All files have to be in the same subdirectory directory.
     # Obviously the subdirectory itself with startswith(itself)
     if any(not x.startswith(directory) for x in names):
-        return True
-    return False
+        return False
+    return True
 
 
 def get_simfile(simfileid, link, dest, extract):
@@ -175,7 +175,7 @@ def get_simfile(simfileid, link, dest, extract):
         zip = None
         try:
             zip = zipfile.ZipFile(filename)
-            if invalid_directory_structure(zip):
+            if not valid_directory_structure(zip):
                 print "Invalid directory structure in %s" % filename
             else:
                 zip.extractall()
