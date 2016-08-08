@@ -12,19 +12,35 @@ class CategoryHTMLParser(HTMLParser):
         HTMLParser.__init__(self)
         self.simfileid = None
         self.title = None
+        self.in_title = False
 
     def handle_starttag(self, tag, attrs):
         if self.simfileid is None and tag == 'a':
             for attr in attrs:
                 if attr[0] == "name":
                     self.simfileid = attr[1][3:]
-                elif attr[0] == "title":
-                    self.title = attr[1]
             if self.simfileid is None:
                 raise RuntimeError("Link does not have name: {}".format(attrs))
-            if self.title is None:
-                raise RuntimeError("Link does not have title: {}".format(attrs))
+            self.in_title = True
 
+    def handle_data(self, data):
+        if self.in_title:
+            if self.title is None:
+                self.title = data
+            else:
+                # z-i-v doesn't properly write &amp; so we assume
+                # the data is split on &
+                self.title = self.title + "&" + data
+
+    def handle_endtag(self, tag):
+        if self.in_title:
+            assert tag == "a"
+            self.in_title = False
+
+    def feed(self, data):
+        HTMLParser.feed(self, data)
+        assert self.title is not None
+        assert self.simfileid is not None
 
 class DownloadHTMLParser(HTMLParser):
     def __init__(self):
@@ -130,7 +146,13 @@ def filter_titles(titles, prefix):
     return [x for x in titles if x[1].startswith(prefix)]
 
 
-def simfile_already_downloaded(simfileid, dest):
+def simfile_already_downloaded(simfile, dest):
+    simfileid, simfile_name = simfile
+    filename = os.path.join(dest, simfile_name)
+    if os.path.exists(filename):
+        print "Directory already exists: %s" % filename
+        return True
+
     filename = os.path.join(dest, "sim%s.zip" % simfileid)
     if os.path.exists(filename):
         print "Zip file already exists: %s" % filename
@@ -209,10 +231,10 @@ def get_simfile(simfileid, link, dest, extract):
 if __name__ == "__main__":
     # TODO: 
     # 29287 does not unzip correctly, zipfile.BadZipfile
-    # 29303 does not have an inner folder.  Can we fix this?
+    # 29303, 29295 do not have an inner folder.  Can we fix this?
     # 29308 also barfed - got an IOError
     # TODO features:
-    # Check for already extracted simfiles, not just zips
+    # Clean up zips that are successfully extracted
     # Add a flag for dates to search for
     # Search all directories for the files, in case you are
     #   rearranging the files after downloading
@@ -243,8 +265,8 @@ if __name__ == "__main__":
 
     count = 0
     for simfile in titles:
-        link = get_file_link(simfile[0])
-        if not simfile_already_downloaded(simfile[0], args.dest):
+        if not simfile_already_downloaded(simfile, args.dest):
+            link = get_file_link(simfile[0])
             count = count + 1
             get_simfile(simfile[0], link, args.dest, args.extract)
 
