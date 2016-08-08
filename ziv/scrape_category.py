@@ -4,7 +4,10 @@ import os
 import sys
 import urllib2
 import zipfile
+from collections import namedtuple
 from HTMLParser import HTMLParser
+
+Simfile = namedtuple("Simfile", "simfileid name")
 
 # create a subclass and override the handler methods
 class CategoryHTMLParser(HTMLParser):
@@ -97,7 +100,7 @@ def get_category(category):
     """
     Returns a list of files in the category.
 
-    The result is a list of pairs: simfile id, title.
+    The result is a list of Simfile tuples: simfile id, name.
     """
     url = "http://zenius-i-vanisher.com/v5.2/viewsimfilecategory.php?categoryid=%s" % category
 
@@ -111,7 +114,7 @@ def get_category(category):
     for i in link_lines:
         parser = CategoryHTMLParser()
         parser.feed(i)
-        results.append((parser.simfileid, parser.title))
+        results.append(Simfile(parser.simfileid, parser.title))
 
     print "Found %d simfiles" % len(results)
 
@@ -143,17 +146,16 @@ def get_file_link(simfileid):
 
 
 def filter_titles(titles, prefix):
-    return [x for x in titles if x[1].startswith(prefix)]
+    return [x for x in titles if x.name.startswith(prefix)]
 
 
 def simfile_already_downloaded(simfile, dest):
-    simfileid, simfile_name = simfile
-    filename = os.path.join(dest, simfile_name)
+    filename = os.path.join(dest, simfile.name)
     if os.path.exists(filename):
         print "Directory already exists: %s" % filename
         return True
 
-    filename = os.path.join(dest, "sim%s.zip" % simfileid)
+    filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
     if os.path.exists(filename):
         print "Zip file already exists: %s" % filename
         return True
@@ -217,13 +219,13 @@ def flat_directory_structure(zip):
 
 
 def extract_simfile(simfile, dest):
-    filename = os.path.join(dest, "sim%s.zip" % simfile[0])
+    filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
 
     zip = None
     try:
         zip = zipfile.ZipFile(filename)
         if flat_directory_structure(zip):
-            dest_dir = os.path.join(dest, simfile[1])
+            dest_dir = os.path.join(dest, simfile.name)
             zip.extractall(dest_dir)
         elif not valid_directory_structure(zip):
             print "Invalid directory structure in %s" % filename
@@ -250,6 +252,7 @@ if __name__ == "__main__":
     # TODO: 
     # 29287 does not unzip correctly, zipfile.BadZipfile
     # 29308 also barfed - got an IOError
+    #   IOError seems to happen because of the trailing space
     # 29343 extracts to a different name
     # TODO features:
     # Clean up zips that are successfully extracted
@@ -284,9 +287,9 @@ if __name__ == "__main__":
     count = 0
     for simfile in titles:
         if not simfile_already_downloaded(simfile, args.dest):
-            link = get_file_link(simfile[0])
+            link = get_file_link(simfile.simfileid)
             count = count + 1
-            get_simfile(simfile[0], link, args.dest, args.extract)
+            get_simfile(simfile.simfileid, link, args.dest, args.extract)
             if args.extract:
                 extract_simfile(simfile, args.dest)
 
