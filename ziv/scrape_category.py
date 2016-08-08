@@ -175,21 +175,21 @@ def valid_zipfile_directory_structure(filename):
     example, as you can pass in a filename instead of opening the zip
     yourself.
     """
-    zip = None
+    simzip = None
     try:
-        zip = zipfile.ZipFile(filename)
-        result = valid_directory_structure(zip=zip)
-        zip.close()
+        simzip = zipfile.ZipFile(filename)
+        result = valid_directory_structure(simzip=simzip)
+        simzip.close()
         return result
     except (zipfile.BadZipfile, IOError) as e:
         return False
     finally:
-        if zip != None:
-            zip.close()
+        if simzip != None:
+            simzip.close()
 
 
-def valid_directory_structure(zip):
-    names = zip.namelist()
+def valid_directory_structure(simzip):
+    names = simzip.namelist()
     if len(names) == 0:
         return False
     dirs = [x for x in names if x.endswith("/")]
@@ -213,7 +213,7 @@ def valid_directory_structure(zip):
     return True
 
 
-def flat_directory_structure(zip):
+def flat_directory_structure(simzip):
     """
     Returns True if the zip does not actually contain any directories,
     but is instead just a bunch of files.
@@ -221,7 +221,7 @@ def flat_directory_structure(zip):
     but some people do submit zip files that way anyway, so it is
     good to compensate.
     """
-    names = zip.namelist()
+    names = simzip.namelist()
     if len(names) == 0:
         return False
     for name in names:
@@ -230,17 +230,17 @@ def flat_directory_structure(zip):
     return True
 
 
-def get_directory(zip):
+def get_directory(simzip):
     """
     Assumes the directory structure inside the zip is valid,
     so it assumes there is exactly one directory and returns that.
     Eg, call valid_directory_structure before calling this function.
     """
-    names = zip.namelist()
+    names = simzip.namelist()
     return names[0].split("/")[0]
 
 
-def extract_fixing_spaces(zip, dest, inner_directory):
+def extract_fixing_spaces(simzip, dest, inner_directory):
     """
     Unfortunately, some files have spaces at the end of their
     directory names, and on Windows that screws everything up.  This
@@ -251,11 +251,11 @@ def extract_fixing_spaces(zip, dest, inner_directory):
     directory = os.path.join(dest, inner_directory)
     os.mkdir(directory)
 
-    for name in zip.namelist():
+    for name in simzip.namelist():
         filename = name.split("/")[1].strip()
         if not filename:
             continue
-        data = zip.read(name)
+        data = simzip.read(name)
         new_name = os.path.join(directory, filename)
         fout = open(new_name, "wb")
         fout.write(data)
@@ -275,24 +275,24 @@ def extract_simfile(simfile, dest):
     """
     filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
 
-    zip = None
+    simzip = None
     try:
-        zip = zipfile.ZipFile(filename)
-        if flat_directory_structure(zip):
+        simzip = zipfile.ZipFile(filename)
+        if flat_directory_structure(simzip):
             dest_dir = os.path.join(dest, simfile.name.strip())
-            zip.extractall(dest_dir)
-        elif not valid_directory_structure(zip):
+            simzip.extractall(dest_dir)
+        elif not valid_directory_structure(simzip):
             print "Invalid directory structure in %s" % filename
         else:
-            inner_directory = get_directory(zip)
+            inner_directory = get_directory(simzip)
             if inner_directory != inner_directory.strip():
-                extract_fixing_spaces(zip, dest, inner_directory)
+                extract_fixing_spaces(simzip, dest, inner_directory)
             else:
-                zip.extractall()
+                simzip.extractall()
     except (zipfile.BadZipfile, IOError) as e:
         print "Unable to extract %s" % filename
-    if zip is not None:
-        zip.close()
+    if simzip is not None:
+        simzip.close()
 
 
 def get_simfile(simfileid, link, dest, extract):
