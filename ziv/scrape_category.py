@@ -155,6 +155,11 @@ def simfile_already_downloaded(simfile, dest):
         print "Directory already exists: %s" % filename
         return True
 
+    filename = os.path.join(dest, simfile.name.strip())
+    if os.path.exists(filename):
+        print "Directory already exists: %s" % filename
+        return True
+
     filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
     if os.path.exists(filename):
         print "Zip file already exists: %s" % filename
@@ -209,6 +214,13 @@ def valid_directory_structure(zip):
 
 
 def flat_directory_structure(zip):
+    """
+    Returns True if the zip does not actually contain any directories,
+    but is instead just a bunch of files.
+    This isn't the way zips are supposed to be organized on z-i-v,
+    but some people do submit zip files that way anyway, so it is
+    good to compensate.
+    """
     names = zip.namelist()
     if len(names) == 0:
         return False
@@ -218,19 +230,65 @@ def flat_directory_structure(zip):
     return True
 
 
+def get_directory(zip):
+    """
+    Assumes the directory structure inside the zip is valid,
+    so it assumes there is exactly one directory and returns that.
+    Eg, call valid_directory_structure before calling this function.
+    """
+    names = zip.namelist()
+    return names[0].split("/")[0]
+
+
+def extract_fixing_spaces(zip, dest, inner_directory):
+    """
+    Unfortunately, some files have spaces at the end of their
+    directory names, and on Windows that screws everything up.  This
+    method fixes it by reading the files manually and writing them to
+    the correct location.
+    """
+    inner_directory = inner_directory.strip()
+    directory = os.path.join(dest, inner_directory)
+    os.mkdir(directory)
+
+    for name in zip.namelist():
+        filename = name.split("/")[1].strip()
+        if not filename:
+            continue
+        data = zip.read(name)
+        new_name = os.path.join(directory, filename)
+        fout = open(new_name, "wb")
+        fout.write(data)
+        fout.close()
+
+
 def extract_simfile(simfile, dest):
+    """
+    Given an (id, name) tuple and the destination arg, extract
+    the simfile to the appropriate location.
+
+    Tries to compensate for a couple error cases.
+    If the zipfile does not contain a folder, a folder is created
+    with the simfile's name.
+    If the simfile's name has trailing or leading spaces, this
+    causes IOErrors on Windows, but that is also fixable.
+    """
     filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
 
     zip = None
     try:
         zip = zipfile.ZipFile(filename)
         if flat_directory_structure(zip):
-            dest_dir = os.path.join(dest, simfile.name)
+            dest_dir = os.path.join(dest, simfile.name.strip())
             zip.extractall(dest_dir)
         elif not valid_directory_structure(zip):
             print "Invalid directory structure in %s" % filename
         else:
-            zip.extractall()
+            inner_directory = get_directory(zip)
+            if inner_directory != inner_directory.strip():
+                extract_fixing_spaces(zip, dest, inner_directory)
+            else:
+                zip.extractall()
     except (zipfile.BadZipfile, IOError) as e:
         print "Unable to extract %s" % filename
     if zip is not None:
@@ -247,18 +305,18 @@ def get_simfile(simfileid, link, dest, extract):
 
 
 if __name__ == "__main__":
-    # If a file doesn't have an inner folder, such as 29303, we
-    # extract the zip to the correct location.
+    # If a file doesn't have an inner folder, such as 29303,
+    # we extract the zip to the correct location.
+    # If a directory has trailing whitespace, such as 29308,
+    # the files are extracted manually to the correct location.
     # TODO: 
     # 29287 does not unzip correctly, zipfile.BadZipfile
-    # 29308 also barfed - got an IOError
-    #   IOError seems to happen because of the trailing space
     # 29343 extracts to a different name
     # TODO features:
     # Clean up zips that are successfully extracted
     # Add a flag for dates to search for
     # Search all directories for the files, in case you are
-    #   rearranging the files after downloading
+    #   rearranging the files after downloading?
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = argparse.ArgumentParser(description='Download category')
@@ -268,7 +326,6 @@ if __name__ == "__main__":
                            help="Only keep files with this prefix")
     argparser.add_argument("--dest", default="",
                            help="Where to put the simfiles.  Defaults to CWD")
-
 
     argparser.add_argument("--extract", dest="extract",
                            action="store_true",
