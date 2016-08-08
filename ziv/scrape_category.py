@@ -319,7 +319,7 @@ if __name__ == "__main__":
     #   rearranging the files after downloading?
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
-    argparser = argparse.ArgumentParser(description='Download category')
+    argparser = argparse.ArgumentParser(description='Download an entire category from z-i-v.  The prefix argument lets you set a prefix, such as for one week worth of simfile contests.')
     argparser.add_argument("--category", default="934",
                            help="Which category number to download")
     argparser.add_argument("--prefix", default="[Mid Speed]",
