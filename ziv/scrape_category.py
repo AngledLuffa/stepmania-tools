@@ -149,21 +149,26 @@ def filter_titles(titles, prefix):
     return [x for x in titles if x.name.startswith(prefix)]
 
 
-def simfile_already_downloaded(simfile, dest):
+def simfile_already_downloaded(simfile, dest, check_zip=True, verbose=True):
     filename = os.path.join(dest, simfile.name)
     if os.path.exists(filename):
-        print "Directory already exists: %s" % filename
+        if verbose:
+            print "Directory already exists: %s" % filename
         return True
 
     filename = os.path.join(dest, simfile.name.strip())
     if os.path.exists(filename):
-        print "Directory already exists: %s" % filename
+        if verbose:
+            print "Directory already exists: %s" % filename
         return True
 
-    filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
-    if os.path.exists(filename):
-        print "Zip file already exists: %s" % filename
-        return True
+    if check_zip:
+        filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
+        if os.path.exists(filename):
+            if verbose:
+                print "Zip file already exists: %s" % filename
+            return True
+
     return False
 
 
@@ -304,6 +309,14 @@ def get_simfile(simfileid, link, dest, extract):
     fout.close()
 
 
+def unlink_zip(simfile, dest):
+    """
+    If we successfully download and extract a zip, we will probably
+    want to clean up after ourselves
+    """
+    filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
+    os.unlink(filename)
+
 if __name__ == "__main__":
     # If a file doesn't have an inner folder, such as 29303,
     # we extract the zip to the correct location.
@@ -313,7 +326,6 @@ if __name__ == "__main__":
     # 29287 does not unzip correctly, zipfile.BadZipfile
     # 29343 extracts to a different name
     # TODO features:
-    # Clean up zips that are successfully extracted
     # Add a flag for dates to search for
     # Search all directories for the files, in case you are
     #   rearranging the files after downloading?
@@ -335,6 +347,12 @@ if __name__ == "__main__":
                            help="Don't extract the zip files")
     argparser.set_defaults(extract=True)
 
+    argparser.add_argument("--tidy", dest="tidy", action="store_true",
+                           help="Delete zip files after extracting")
+    argparser.add_argument("--no-tidy", dest="tidy", action="store_false",
+                           help="Don't delete zip files after extracting")
+    argparser.set_defaults(tidy=True)
+
     args = argparser.parse_args()
 
     titles = get_category(args.category)
@@ -349,5 +367,10 @@ if __name__ == "__main__":
             get_simfile(simfile.simfileid, link, args.dest, args.extract)
             if args.extract:
                 extract_simfile(simfile, args.dest)
+                if (args.tidy and simfile_already_downloaded(simfile,
+                                                             args.dest,
+                                                             check_zip=False,
+                                                             verbose=False)):
+                    unlink_zip(simfile, args.dest)
 
     print "Downloaded %d simfiles" % count
