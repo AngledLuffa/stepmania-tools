@@ -206,6 +206,22 @@ def valid_directory_structure(zip):
     return True
 
 
+def extract_simfile(simfileid, dest):
+    filename = os.path.join(dest, "sim%s.zip" % simfileid)
+
+    zip = None
+    try:
+        zip = zipfile.ZipFile(filename)
+        if not valid_directory_structure(zip):
+            print "Invalid directory structure in %s" % filename
+        else:
+            zip.extractall()
+    except (zipfile.BadZipfile, IOError) as e:
+        print "Unable to extract %s" % filename
+    if zip is not None:
+        zip.close()
+
+
 def get_simfile(simfileid, link, dest, extract):
     filename = os.path.join(dest, "sim%s.zip" % simfileid)
     print "Downloading %s to %s" % (link, filename)
@@ -213,19 +229,6 @@ def get_simfile(simfileid, link, dest, extract):
     fout = open(filename, "wb")
     fout.write(content)
     fout.close()
-
-    if extract:
-        zip = None
-        try:
-            zip = zipfile.ZipFile(filename)
-            if not valid_directory_structure(zip):
-                print "Invalid directory structure in %s" % filename
-            else:
-                zip.extractall()
-        except (zipfile.BadZipfile, IOError) as e:
-            print "Unable to extract %s" % filename
-        if zip is not None:
-            zip.close()
 
 
 if __name__ == "__main__":
@@ -269,5 +272,7 @@ if __name__ == "__main__":
             link = get_file_link(simfile[0])
             count = count + 1
             get_simfile(simfile[0], link, args.dest, args.extract)
+            if args.extract:
+                extract_simfile(simfile[0], args.dest)
 
     print "Downloaded %d simfiles" % count
