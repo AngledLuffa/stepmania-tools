@@ -206,13 +206,26 @@ def valid_directory_structure(zip):
     return True
 
 
-def extract_simfile(simfileid, dest):
-    filename = os.path.join(dest, "sim%s.zip" % simfileid)
+def flat_directory_structure(zip):
+    names = zip.namelist()
+    if len(names) == 0:
+        return False
+    for name in names:
+        if name.find("/") >= 0:
+            return False
+    return True
+
+
+def extract_simfile(simfile, dest):
+    filename = os.path.join(dest, "sim%s.zip" % simfile[0])
 
     zip = None
     try:
         zip = zipfile.ZipFile(filename)
-        if not valid_directory_structure(zip):
+        if flat_directory_structure(zip):
+            dest_dir = os.path.join(dest, simfile[1])
+            zip.extractall(dest_dir)
+        elif not valid_directory_structure(zip):
             print "Invalid directory structure in %s" % filename
         else:
             zip.extractall()
@@ -232,10 +245,12 @@ def get_simfile(simfileid, link, dest, extract):
 
 
 if __name__ == "__main__":
+    # If a file doesn't have an inner folder, such as 29303, we
+    # extract the zip to the correct location.
     # TODO: 
     # 29287 does not unzip correctly, zipfile.BadZipfile
-    # 29303, 29295 do not have an inner folder.  Can we fix this?
     # 29308 also barfed - got an IOError
+    # 29343 extracts to a different name
     # TODO features:
     # Clean up zips that are successfully extracted
     # Add a flag for dates to search for
@@ -273,6 +288,6 @@ if __name__ == "__main__":
             count = count + 1
             get_simfile(simfile[0], link, args.dest, args.extract)
             if args.extract:
-                extract_simfile(simfile[0], args.dest)
+                extract_simfile(simfile, args.dest)
 
     print "Downloaded %d simfiles" % count
