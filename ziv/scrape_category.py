@@ -197,20 +197,19 @@ def valid_directory_structure(simzip):
     names = simzip.namelist()
     if len(names) == 0:
         return False
-    dirs = [x for x in names if x.endswith("/")]
-    if len(dirs) > 1:
+    # In most cases, a directory containing the files is zipped into
+    # the archive.  However, that's not necessarily the case.  What
+    # does happen, though, is that even the directories have a "/" in
+    # them (they end with "/").  Therefore, what we can do is take the
+    # first directory segment of the first filename.  If all the other
+    # files share that name, then we have a valid directory structure.
+    # TODO: this doesn't actually check for music files, simfiles, etc
+    # in the first directory, but that's okay
+    if any(x.find("/") < 0 for x in names):
         return False
-    elif len(dirs) == 1:
-        directory = dirs[0]
-    else:
-        # No directory was zipped into the archive, but maybe all of
-        # the files are in the same directory anyway
-        slash_index = names[0].find("/")
-        # if there is no "/" then this file is not in a subdirectory,
-        # which is an invalid directory structure
-        if slash_index < 0:
-            return False
-        directory = names[0][:slash_index]
+    dirs = [x.split("/")[0] for x in names]
+    dirs.sort(key=len)
+    directory = dirs[0] + "/"
     # All files have to be in the same subdirectory directory.
     # Obviously the subdirectory itself with startswith(itself)
     if any(not x.startswith(directory) for x in names):
@@ -289,6 +288,7 @@ def extract_simfile(simfile, dest):
         elif not valid_directory_structure(simzip):
             print "Invalid directory structure in %s" % filename
         else:
+            # Check for leading or trailing whitespace in the filename
             inner_directory = get_directory(simzip)
             if inner_directory != inner_directory.strip():
                 extract_fixing_spaces(simzip, dest, inner_directory)
@@ -324,7 +324,7 @@ if __name__ == "__main__":
     # the files are extracted manually to the correct location.
     # TODO: 
     # 29287 does not unzip correctly, zipfile.BadZipfile
-    # 29343 extracts to a different name
+    # 29291 and 29343 extract to a different name
     # TODO features:
     # Add a flag for dates to search for
     # Search all directories for the files, in case you are
