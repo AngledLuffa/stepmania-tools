@@ -329,12 +329,15 @@ if __name__ == "__main__":
     # Add a flag for dates to search for
     # Search all directories for the files, in case you are
     #   rearranging the files after downloading?
+    # Keep a log of which files go where.  This log could be read back
+    #   as needed and would allow the program to find files which get
+    #   send elsewhere, such as 29291 and 29343
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = argparse.ArgumentParser(description='Download an entire category from z-i-v.  The prefix argument lets you set a prefix, such as for one week worth of simfile contests.')
     argparser.add_argument("--category", default="934",
                            help="Which category number to download")
-    argparser.add_argument("--prefix", default="[Mid Speed]",
+    argparser.add_argument("--prefix", default="[Food Week]",
                            help="Only keep files with this prefix")
     argparser.add_argument("--dest", default="",
                            help="Where to put the simfiles.  Defaults to CWD")
