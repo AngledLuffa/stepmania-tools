@@ -427,6 +427,7 @@ if __name__ == "__main__":
     #
     # TODO: 
     # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
+    # 29506 was zipped on a mac with the mac directories
     #
     # TODO features:
     # Add a flag for dates to search for
@@ -456,7 +457,8 @@ if __name__ == "__main__":
             get_simfile(simfile.simfileid, link, args.dest)
             if args.extract:
                 extracted_directory = extract_simfile(simfile, args.dest)
-                if extracted_directory != simfile.name:
+                if (extracted_directory is not None and
+                    extracted_directory != simfile.name):
                     if args.use_logfile:
                         # If we aren't using the logfile, there will
                         # be no record of where the file goes, so we
