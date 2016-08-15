@@ -180,13 +180,13 @@ def simfile_already_downloaded(simfile, dest, check_zip=True, verbose=True):
     filename = os.path.join(dest, simfile.name)
     if os.path.exists(filename):
         if verbose:
-            print "Directory already exists: %s" % filename
+            print 'Directory already exists: "%s"' % filename
         return True
 
     filename = os.path.join(dest, simfile.name.strip())
     if os.path.exists(filename):
         if verbose:
-            print "Directory already exists: %s" % filename
+            print 'Directory already exists: "%s"' % filename
         return True
 
     if check_zip:
@@ -356,7 +356,7 @@ def extract_simfile(simfile, dest):
 
 def get_simfile_from_ziv(simfile, link, dest):
     filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
-    print "Downloading %s from %s to %s" % (simfile.name, link, filename)
+    print 'Downloading "%s" from %s to %s' % (simfile.name, link, filename)
     content = get_content(link, split=False)
     fout = open(filename, "wb")
     fout.write(content)
@@ -372,13 +372,13 @@ def unlink_zip(simfile, dest):
     os.unlink(filename)
 
 
-LOG_PATTERN = re.compile("^(.*) extracted to (.*) instead of (.*)$")
+LOG_PATTERN = re.compile('^(.*) extracted to "(.*)" instead of "(.*)"$')
 
 def get_log_filename(dest):
     return os.path.join(dest, "download_log.txt")
 
 def renaming_message(simfile, actual):
-    return "%s extracted to %s instead of %s" % (simfile.simfileid, actual, simfile.name)
+    return '%s extracted to "%s" instead of "%s"' % (simfile.simfileid, actual, simfile.name)
 
 def log_renaming_message(simfile, actual, dest):
     message = renaming_message(simfile, actual)
@@ -505,7 +505,6 @@ if __name__ == "__main__":
     # TODO other stuff:
     # write unit tests
     # use the logging library
-    # renaming message should put the filename in quotes
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = build_argparser()
