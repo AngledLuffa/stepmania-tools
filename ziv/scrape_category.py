@@ -410,8 +410,7 @@ if __name__ == "__main__":
     # Some files, such as 29437, extract to a different folder name
     # than the name given in the category.  We track those names in a
     # file named download_log.txt in the destination directory.
-    # TODO: add a flag for turning off that feature.
-    #   eg use-logfile no-use-logfile
+    # Tracking in the logfile can be turned off with --no-use-logfile
     #
     # TODO: 
     # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
@@ -420,6 +419,12 @@ if __name__ == "__main__":
     # Add a flag for dates to search for
     # Search all directories for the files, in case you are
     #   rearranging the files after downloading?
+    #
+    # TODO other stuff:
+    # refactor main program
+    # write unit tests
+    # add license
+    # add usage notes
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = build_argparser()
