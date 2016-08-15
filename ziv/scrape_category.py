@@ -211,7 +211,7 @@ def valid_zipfile_directory_structure(filename):
 
 
 def valid_directory_structure(simzip):
-    names = simzip.namelist()
+    names = filter_mac_files(simzip.namelist())
     if len(names) == 0:
         return False
     # In most cases, a directory containing the files is zipped into
@@ -234,6 +234,11 @@ def valid_directory_structure(simzip):
     return True
 
 
+def filter_mac_files(names):
+    return [x for x in names
+            if not x.startswith("__MAC") and x.find("/__MAC") < 0]
+
+
 def flat_directory_structure(simzip):
     """
     Returns True if the zip does not actually contain any directories,
@@ -242,7 +247,7 @@ def flat_directory_structure(simzip):
     but some people do submit zip files that way anyway, so it is
     good to compensate.
     """
-    names = simzip.namelist()
+    names = filter_mac_files(simzip.namelist())
     if len(names) == 0:
         return False
     for name in names:
@@ -257,7 +262,7 @@ def get_directory(simzip):
     so it assumes there is exactly one directory and returns that.
     Eg, call valid_directory_structure before calling this function.
     """
-    names = simzip.namelist()
+    names = filter_mac_files(simzip.namelist())
     return names[0].split("/")[0]
 
 
@@ -272,13 +277,12 @@ def extract_fixing_spaces(simzip, dest, inner_directory):
     directory = os.path.join(dest, inner_directory)
     os.mkdir(directory)
 
-    namelist = simzip.namelist()
+    # skip files that have _MAC in them
+    namelist = filter_mac_files(simzip.namelist())
     # sort so that we always create subdirectories first if needed
     namelist.sort(key=len)
-    for name in simzip.namelist():
-        if name.startswith("_MAC") or name.find("/_MAC") >= 0:
-            # skip files that have _MAC in them
-            continue
+
+    for name in namelist:
         path_pieces = [x.strip() for x in name.split("/")]
         if path_pieces[0] != inner_directory:
             # this can happen in the case of a file with no inner folder
