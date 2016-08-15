@@ -450,10 +450,9 @@ def download_simfile(simfile, dest, tidy, use_logfile):
         if (extracted_directory is not None and
             extracted_directory != simfile.name):
             if use_logfile:
-                # If we aren't using the logfile, there will
-                # be no record of where the file goes, so we
-                # can't update the location and then delete
-                # the zip
+                # If we aren't using the logfile, there will be no
+                # record of where the file goes, so we can't update
+                # the location and then delete the zip
                 log_renaming_message(simfile, extracted_directory, dest)
                 simfile = simfile._replace(name=extracted_directory)
         # If we were asked to clean up after ourselves, verify that
