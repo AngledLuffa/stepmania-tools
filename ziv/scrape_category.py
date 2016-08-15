@@ -1,3 +1,6 @@
+# Copyright 2016 by John Bauer
+# Distributed under the Apache License 2.0
+
 # TO THE EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS",
 # WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
 # LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -432,7 +435,6 @@ if __name__ == "__main__":
     # TODO other stuff:
     # refactor main program
     # write unit tests
-    # add license
     # add usage notes
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
