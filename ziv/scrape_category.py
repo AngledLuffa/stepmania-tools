@@ -413,36 +413,42 @@ def build_argparser():
     return argparser
 
 
-def download_simfiles(titles, args):
+def download_simfile(simfile, dest, tidy, use_logfile):
+    link = get_file_link_from_ziv(simfile.simfileid)
+    get_simfile_from_ziv(simfile.simfileid, link, dest)
+    if args.extract:
+        extracted_directory = extract_simfile(simfile, dest)
+        if (extracted_directory is not None and
+            extracted_directory != simfile.name):
+            if use_logfile:
+                # If we aren't using the logfile, there will
+                # be no record of where the file goes, so we
+                # can't update the location and then delete
+                # the zip
+                log_renaming_message(simfile, extracted_directory, dest)
+                simfile = simfile._replace(name=extracted_directory)
+        # If we were asked to clean up after ourselves, verify that
+        # everything went right, and if so, delete the zip
+        if (tidy and simfile_already_downloaded(simfile, dest,
+                                                check_zip=False,
+                                                verbose=False)):
+            unlink_zip(simfile, dest)
+
+
+def download_simfiles(titles, dest, tidy, use_logfile):
     """
     Downloads the simfiles and returns how many zips were actually downloaded.
 
     titles : map from ziv id to Simfile
-    args : the args returned from the argparser
+    dest : directory to send the simfiles (and logs)
+    tidy : clean up zips if the simfiles are successfully extracted
+    use_logfile : write a log to that directory
     """
     count = 0
     for simfile in titles.values():
         if not simfile_already_downloaded(simfile, args.dest):
-            link = get_file_link_from_ziv(simfile.simfileid)
             count = count + 1
-            get_simfile_from_ziv(simfile.simfileid, link, args.dest)
-            if args.extract:
-                extracted_directory = extract_simfile(simfile, args.dest)
-                if (extracted_directory is not None and
-                    extracted_directory != simfile.name):
-                    if args.use_logfile:
-                        # If we aren't using the logfile, there will
-                        # be no record of where the file goes, so we
-                        # can't update the location and then delete
-                        # the zip
-                        log_renaming_message(simfile, extracted_directory, args.dest)
-                        simfile = simfile._replace(name=extracted_directory)
-                if (args.tidy and simfile_already_downloaded(simfile,
-                                                             args.dest,
-                                                             check_zip=False,
-                                                             verbose=False)):
-                    unlink_zip(simfile, args.dest)
-
+            download_simfile(simfile, dest, tidy, use_logfile)
     return count
 
 if __name__ == "__main__":
@@ -467,9 +473,9 @@ if __name__ == "__main__":
     #   rearranging the files after downloading?
     #
     # TODO other stuff:
-    # refactor main program
     # write unit tests
     # add usage notes
+    # use the logging library
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = build_argparser()
@@ -481,5 +487,5 @@ if __name__ == "__main__":
     if args.use_logfile:
         titles = get_logged_titles(titles, args.dest)
 
-    count = download_simfiles(titles, args)
+    count = download_simfiles(titles, args.dest, args.tidy, args.use_logfile)
     print "Downloaded %d simfiles" % count
