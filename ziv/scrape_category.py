@@ -228,7 +228,7 @@ def valid_directory_structure(simzip):
     dirs.sort(key=len)
     directory = dirs[0] + "/"
     # All files have to be in the same subdirectory directory.
-    # Obviously the subdirectory itself with startswith(itself)
+    # Obviously the subdirectory itself satisfies startswith(itself)
     if any(not x.startswith(directory) for x in names):
         return False
     return True
@@ -272,8 +272,23 @@ def extract_fixing_spaces(simzip, dest, inner_directory):
     directory = os.path.join(dest, inner_directory)
     os.mkdir(directory)
 
+    namelist = simzip.namelist()
+    # sort so that we always create subdirectories first if needed
+    namelist.sort(key=len)
     for name in simzip.namelist():
-        filename = name.split("/")[1].strip()
+        if name.startswith("_MAC") or name.find("/_MAC") >= 0:
+            # skip files that have _MAC in them
+            continue
+        path_pieces = [x.strip() for x in name.split("/")]
+        if path_pieces[0] != inner_directory:
+            # this can happen in the case of a file with no inner folder
+            path_pieces = [inner_directory] + path_pieces
+        path_pieces = [dest] + path_pieces
+        path = os.path.join(*path_pieces)
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.mkdir(dirname)
+        filename = os.path.basename(path)
         if not filename:
             continue
         data = simzip.read(name)
@@ -311,13 +326,13 @@ def extract_simfile(simfile, dest):
         elif not valid_directory_structure(simzip):
             print "Invalid directory structure in %s" % filename
         else:
-            # Check for leading or trailing whitespace in the filename
+            # This will check for spaces at the start or end of the
+            # filenames, which are not okay in Windows
+            # Another reason we can't use extractall because we want
+            # to eliminate files such as _MACOSX
             extracted_directory = get_directory(simzip)
-            if extracted_directory != extracted_directory.strip():
-                extract_fixing_spaces(simzip, dest, extracted_directory)
-                extracted_directory = extracted_directory.strip()
-            else:
-                simzip.extractall()
+            extracted_directory = extracted_directory.strip()
+            extract_fixing_spaces(simzip, dest, extracted_directory)
     except (zipfile.BadZipfile, IOError) as e:
         print "Unable to extract %s" % filename
     if simzip is not None:
