@@ -313,7 +313,7 @@ def extract_simfile(simfile, dest):
     return extracted_directory
 
 
-def get_simfile(simfileid, link, dest, extract):
+def get_simfile(simfileid, link, dest):
     filename = os.path.join(dest, "sim%s.zip" % simfileid)
     print "Downloading %s to %s" % (link, filename)
     content = get_content(link, split=False)
@@ -366,27 +366,7 @@ def get_logged_titles(titles, dest):
     return updated
 
 
-if __name__ == "__main__":
-    # If a file doesn't have an inner folder, such as 29303,
-    # we extract the zip to the correct location.
-    #
-    # If a directory has trailing whitespace, such as 29308,
-    # the files are extracted manually to the correct location.
-    #
-    # Some files, such as 29437, extract to a different folder name
-    # than the name given in the category.  We track those names in a
-    # file named download_log.txt in the destination directory.
-    # TODO: add a flag for turning off that feature.
-    #
-    # TODO: 
-    # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
-    #
-    # TODO features:
-    # Add a flag for dates to search for
-    # Search all directories for the files, in case you are
-    #   rearranging the files after downloading?
-    sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
-
+def build_argparser():
     argparser = argparse.ArgumentParser(description='Download an entire category from z-i-v.  The prefix argument lets you set a prefix, such as for one week worth of simfile contests.')
     argparser.add_argument("--category", default="934",
                            help="Which category number to download")
@@ -409,6 +389,31 @@ if __name__ == "__main__":
                            help="Don't delete zip files after extracting")
     argparser.set_defaults(tidy=True)
 
+    return argparser
+
+
+if __name__ == "__main__":
+    # If a file doesn't have an inner folder, such as 29303,
+    # we extract the zip to the correct location.
+    #
+    # If a directory has trailing whitespace, such as 29308,
+    # the files are extracted manually to the correct location.
+    #
+    # Some files, such as 29437, extract to a different folder name
+    # than the name given in the category.  We track those names in a
+    # file named download_log.txt in the destination directory.
+    # TODO: add a flag for turning off that feature.
+    #
+    # TODO: 
+    # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
+    #
+    # TODO features:
+    # Add a flag for dates to search for
+    # Search all directories for the files, in case you are
+    #   rearranging the files after downloading?
+    sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
+
+    argparser = build_argparser()
     args = argparser.parse_args()
 
     titles = get_category(args.category)
@@ -421,7 +426,7 @@ if __name__ == "__main__":
         if not simfile_already_downloaded(simfile, args.dest):
             link = get_file_link(simfile.simfileid)
             count = count + 1
-            get_simfile(simfile.simfileid, link, args.dest, args.extract)
+            get_simfile(simfile.simfileid, link, args.dest)
             if args.extract:
                 extracted_directory = extract_simfile(simfile, args.dest)
                 if extracted_directory != simfile.name:
