@@ -1,6 +1,7 @@
 import argparse
 import codecs
 import os
+import re
 import sys
 import urllib2
 import zipfile
@@ -110,11 +111,11 @@ def get_category(category):
     content = get_content(url)
     link_lines = [x for x in content if "viewsimfile.php?simfileid" in x]
 
-    results = []
+    results = {}
     for i in link_lines:
         parser = CategoryHTMLParser()
         parser.feed(i)
-        results.append(Simfile(parser.simfileid, parser.title))
+        results[parser.simfileid] = Simfile(parser.simfileid, parser.title)
 
     print "Found %d simfiles" % len(results)
 
@@ -146,7 +147,11 @@ def get_file_link(simfileid):
 
 
 def filter_titles(titles, prefix):
-    return [x for x in titles if x.name.startswith(prefix)]
+    filtered = {}
+    for x in titles.keys():
+        if titles[x].name.startswith(prefix):
+            filtered[x] = titles[x]
+    return filtered
 
 
 def simfile_already_downloaded(simfile, dest, check_zip=True, verbose=True):
@@ -276,6 +281,8 @@ def extract_simfile(simfile, dest):
     with the simfile's name.
     If the simfile's name has trailing or leading spaces, this
     causes IOErrors on Windows, but that is also fixable.
+
+    Return value is the directory extracted to.
     """
     filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
 
@@ -283,21 +290,27 @@ def extract_simfile(simfile, dest):
     try:
         simzip = zipfile.ZipFile(filename)
         if flat_directory_structure(simzip):
-            dest_dir = os.path.join(dest, simfile.name.strip())
+            # There is no inner directory, but we will treat the
+            # directory we create as the location for the files
+            extracted_directory = simfile.name.strip()
+            dest_dir = os.path.join(dest, extracted_directory)
             simzip.extractall(dest_dir)
         elif not valid_directory_structure(simzip):
             print "Invalid directory structure in %s" % filename
         else:
             # Check for leading or trailing whitespace in the filename
-            inner_directory = get_directory(simzip)
-            if inner_directory != inner_directory.strip():
-                extract_fixing_spaces(simzip, dest, inner_directory)
+            extracted_directory = get_directory(simzip)
+            if extracted_directory != extracted_directory.strip():
+                extract_fixing_spaces(simzip, dest, extracted_directory)
+                extracted_directory = extracted_directory.strip()
             else:
                 simzip.extractall()
     except (zipfile.BadZipfile, IOError) as e:
         print "Unable to extract %s" % filename
     if simzip is not None:
         simzip.close()
+
+    return extracted_directory
 
 
 def get_simfile(simfileid, link, dest, extract):
@@ -317,21 +330,61 @@ def unlink_zip(simfile, dest):
     filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
     os.unlink(filename)
 
+
+LOG_PATTERN = re.compile("^(.*) extracted to (.*) instead of (.*)$")
+
+def get_log_filename(dest):
+    return os.path.join(dest, "download_log.txt")
+
+def renaming_message(simfile, actual):
+    return "%s extracted to %s instead of %s" % (simfile.simfileid, actual, simfile.name)
+
+def log_renaming_message(simfile, actual, dest):
+    message = renaming_message(simfile, actual)
+    log_filename = get_log_filename(dest)
+    with open(log_filename, "a") as fout:
+        fout.write(message)
+        fout.write("\n")
+        fout.close()
+
+
+def get_logged_titles(titles, dest):
+    log_filename = get_log_filename(dest)
+    updated = titles.copy()
+    if not os.path.exists(log_filename):
+        return updated
+    with open(log_filename) as fin:
+        for line in fin.readlines():
+            match = LOG_PATTERN.match(line.strip())
+            if not match:
+                continue
+            simfileid = match.groups()[0]
+            name = match.groups()[1]
+            if simfileid not in titles:
+                continue
+            updated[simfileid] = Simfile(simfileid, name)
+    return updated
+
+
 if __name__ == "__main__":
     # If a file doesn't have an inner folder, such as 29303,
     # we extract the zip to the correct location.
+    #
     # If a directory has trailing whitespace, such as 29308,
     # the files are extracted manually to the correct location.
+    #
+    # Some files, such as 29437, extract to a different folder name
+    # than the name given in the category.  We track those names in a
+    # file named download_log.txt in the destination directory.
+    # TODO: add a flag for turning off that feature.
+    #
     # TODO: 
-    # 29287 does not unzip correctly, zipfile.BadZipfile
-    # 29291 and 29343 extract to a different name
+    # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
+    #
     # TODO features:
     # Add a flag for dates to search for
     # Search all directories for the files, in case you are
     #   rearranging the files after downloading?
-    # Keep a log of which files go where.  This log could be read back
-    #   as needed and would allow the program to find files which get
-    #   send elsewhere, such as 29291 and 29343
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = argparse.ArgumentParser(description='Download an entire category from z-i-v.  The prefix argument lets you set a prefix, such as for one week worth of simfile contests.')
@@ -361,15 +414,19 @@ if __name__ == "__main__":
     titles = get_category(args.category)
     if args.prefix:
         titles = filter_titles(titles, args.prefix)
+    titles = get_logged_titles(titles, args.dest)
 
     count = 0
-    for simfile in titles:
+    for simfile in titles.values():
         if not simfile_already_downloaded(simfile, args.dest):
             link = get_file_link(simfile.simfileid)
             count = count + 1
             get_simfile(simfile.simfileid, link, args.dest, args.extract)
             if args.extract:
-                extract_simfile(simfile, args.dest)
+                extracted_directory = extract_simfile(simfile, args.dest)
+                if extracted_directory != simfile.name:
+                    log_renaming_message(simfile, extracted_directory, args.dest)
+                    simfile = simfile._replace(name=extracted_directory)
                 if (args.tidy and simfile_already_downloaded(simfile,
                                                              args.dest,
                                                              check_zip=False,
