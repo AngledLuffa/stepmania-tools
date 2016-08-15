@@ -325,8 +325,7 @@ def extract_simfile(simfile, dest):
             # There is no inner directory, but we will treat the
             # directory we create as the location for the files
             extracted_directory = simfile.name.strip()
-            dest_dir = os.path.join(dest, extracted_directory)
-            simzip.extractall(dest_dir)
+            extract_fixing_spaces(simzip, dest, extracted_directory)
         elif not valid_directory_structure(simzip):
             print "Invalid directory structure in %s" % filename
         else:
@@ -482,9 +481,11 @@ if __name__ == "__main__":
     # file named download_log.txt in the destination directory.
     # Tracking in the logfile can be turned off with --no-use-logfile
     #
+    # Some files such as 29506 include mac-specific subdirectories.
+    # Those get filtered when the zip is extracted.
+    #
     # TODO: 
     # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
-    # 29506 was zipped on a mac with the mac directories
     #
     # TODO features:
     # Add a flag for dates to search for
@@ -495,6 +496,7 @@ if __name__ == "__main__":
     # write unit tests
     # add usage notes
     # use the logging library
+    # renaming message should put the filename in quotes
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = build_argparser()
@@ -503,6 +505,7 @@ if __name__ == "__main__":
     titles = get_category_from_ziv(args.category)
     if args.prefix:
         titles = filter_titles(titles, args.prefix)
+        print "%d simfiles matched pattern" % len(titles)
     if args.use_logfile:
         titles = get_logged_titles(titles, args.dest)
 
