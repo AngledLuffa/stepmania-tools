@@ -354,9 +354,9 @@ def extract_simfile(simfile, dest):
     return extracted_directory
 
 
-def get_simfile_from_ziv(simfileid, link, dest):
-    filename = os.path.join(dest, "sim%s.zip" % simfileid)
-    print "Downloading %s to %s" % (link, filename)
+def get_simfile_from_ziv(simfile, link, dest):
+    filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
+    print "Downloading %s from %s to %s" % (simfile.name, link, filename)
     content = get_content(link, split=False)
     fout = open(filename, "wb")
     fout.write(content)
@@ -444,7 +444,7 @@ def build_argparser():
 
 def download_simfile(simfile, dest, tidy, use_logfile):
     link = get_file_link_from_ziv(simfile.simfileid)
-    get_simfile_from_ziv(simfile.simfileid, link, dest)
+    get_simfile_from_ziv(simfile, link, dest)
     if args.extract:
         extracted_directory = extract_simfile(simfile, dest)
         if (extracted_directory is not None and
