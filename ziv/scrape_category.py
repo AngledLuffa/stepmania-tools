@@ -1,3 +1,20 @@
+"""
+Downloads a category of simfiles from ZiV.  The default is to
+download the current week of the summer 2016 contest (as of
+2016-08-15) to the current directory.
+
+If you are reading this on github and looking for a way to download
+the script, look for the button labeled "Raw" to the upper right.
+Download to the directory where you want the simfiles downloaded.
+You will need Python installed.  www.python.org
+The program is compatible with 2.7.  Python 3 has not been tested.
+
+Run with no arguments to download those files to the current directory.
+
+Run with --help for more help.
+
+"""
+
 # Copyright 2016 by John Bauer
 # Distributed under the Apache License 2.0
 
@@ -9,16 +26,6 @@
 # FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 # OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-"""
-Downloads a category of simfiles from ZiV.  The default is to
-download the current week of the summer 2016 contest (as of
-2016-08-15) to the current directory.
-
-Run with no arguments to download those files to the current directory.
-
-Run with --help for more help.
-"""
 
 import argparse
 import codecs
