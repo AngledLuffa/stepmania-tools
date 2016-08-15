@@ -10,6 +10,16 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 # OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+"""
+Downloads a category of simfiles from ZiV.  The default is to
+download the current week of the summer 2016 contest (as of
+2016-08-15) to the current directory.
+
+Run with no arguments to download those files to the current directory.
+
+Run with --help for more help.
+"""
+
 import argparse
 import codecs
 import os
@@ -398,11 +408,12 @@ def get_logged_titles(titles, dest):
 
 
 def build_argparser():
-    argparser = argparse.ArgumentParser(description='Download an entire category from z-i-v.  The prefix argument lets you set a prefix, such as for one week worth of simfile contests.')
+    current_week = "[Food Week]"
+    argparser = argparse.ArgumentParser(description='Download an entire category from z-i-v.  The default arguments download the %s week of the summer 2016 contest.  All you need to do to download that week is run the python script in the directory you want to have the simfiles.  The prefix argument lets you set a prefix, such as a different week of the contest, and the dest argument lets you specify a different directory to store the files.' % current_week)
     argparser.add_argument("--category", default="934",
                            help="Which category number to download")
-    argparser.add_argument("--prefix", default="[Food Week]",
-                           help="Only keep files with this prefix")
+    argparser.add_argument("--prefix", default=current_week,
+                           help="Only keep files with this prefix.  Default %s" % current_week)
     argparser.add_argument("--dest", default="",
                            help="Where to put the simfiles.  Defaults to CWD")
 
@@ -494,7 +505,6 @@ if __name__ == "__main__":
     #
     # TODO other stuff:
     # write unit tests
-    # add usage notes
     # use the logging library
     # renaming message should put the filename in quotes
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
