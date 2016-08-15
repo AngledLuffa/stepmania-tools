@@ -109,7 +109,7 @@ def get_content(url, split=True):
     return content
 
 
-def get_category(category):
+def get_category_from_ziv(category):
     """
     Returns a list of files in the category.
 
@@ -134,7 +134,7 @@ def get_category(category):
     return results
 
 
-def get_file_link(simfileid):
+def get_file_link_from_ziv(simfileid):
     """
     Gets the page for this particular simfile, extracts the link to
     the largest zip file on that link
@@ -326,7 +326,7 @@ def extract_simfile(simfile, dest):
     return extracted_directory
 
 
-def get_simfile(simfileid, link, dest):
+def get_simfile_from_ziv(simfileid, link, dest):
     filename = os.path.join(dest, "sim%s.zip" % simfileid)
     print "Downloading %s to %s" % (link, filename)
     content = get_content(link, split=False)
@@ -413,6 +413,38 @@ def build_argparser():
     return argparser
 
 
+def download_simfiles(titles, args):
+    """
+    Downloads the simfiles and returns how many zips were actually downloaded.
+
+    titles : map from ziv id to Simfile
+    args : the args returned from the argparser
+    """
+    count = 0
+    for simfile in titles.values():
+        if not simfile_already_downloaded(simfile, args.dest):
+            link = get_file_link_from_ziv(simfile.simfileid)
+            count = count + 1
+            get_simfile_from_ziv(simfile.simfileid, link, args.dest)
+            if args.extract:
+                extracted_directory = extract_simfile(simfile, args.dest)
+                if (extracted_directory is not None and
+                    extracted_directory != simfile.name):
+                    if args.use_logfile:
+                        # If we aren't using the logfile, there will
+                        # be no record of where the file goes, so we
+                        # can't update the location and then delete
+                        # the zip
+                        log_renaming_message(simfile, extracted_directory, args.dest)
+                        simfile = simfile._replace(name=extracted_directory)
+                if (args.tidy and simfile_already_downloaded(simfile,
+                                                             args.dest,
+                                                             check_zip=False,
+                                                             verbose=False)):
+                    unlink_zip(simfile, args.dest)
+
+    return count
+
 if __name__ == "__main__":
     # If a file doesn't have an inner folder, such as 29303,
     # we extract the zip to the correct location.
@@ -443,33 +475,11 @@ if __name__ == "__main__":
     argparser = build_argparser()
     args = argparser.parse_args()
 
-    titles = get_category(args.category)
+    titles = get_category_from_ziv(args.category)
     if args.prefix:
         titles = filter_titles(titles, args.prefix)
     if args.use_logfile:
         titles = get_logged_titles(titles, args.dest)
 
-    count = 0
-    for simfile in titles.values():
-        if not simfile_already_downloaded(simfile, args.dest):
-            link = get_file_link(simfile.simfileid)
-            count = count + 1
-            get_simfile(simfile.simfileid, link, args.dest)
-            if args.extract:
-                extracted_directory = extract_simfile(simfile, args.dest)
-                if (extracted_directory is not None and
-                    extracted_directory != simfile.name):
-                    if args.use_logfile:
-                        # If we aren't using the logfile, there will
-                        # be no record of where the file goes, so we
-                        # can't update the location and then delete
-                        # the zip
-                        log_renaming_message(simfile, extracted_directory, args.dest)
-                        simfile = simfile._replace(name=extracted_directory)
-                if (args.tidy and simfile_already_downloaded(simfile,
-                                                             args.dest,
-                                                             check_zip=False,
-                                                             verbose=False)):
-                    unlink_zip(simfile, args.dest)
-
+    count = download_simfiles(titles, args)
     print "Downloaded %d simfiles" % count
