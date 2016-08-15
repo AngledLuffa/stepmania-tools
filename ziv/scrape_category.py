@@ -299,6 +299,7 @@ def extract_simfile(simfile, dest):
     filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
 
     simzip = None
+    extracted_directory = None
     try:
         simzip = zipfile.ZipFile(filename)
         if flat_directory_structure(simzip):
