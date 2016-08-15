@@ -389,6 +389,14 @@ def build_argparser():
                            help="Don't delete zip files after extracting")
     argparser.set_defaults(tidy=True)
 
+    argparser.add_argument("--use-logfile", dest="use_logfile",
+                           action="store_true",
+                           help="Use download_log.txt to record where downloads are unzipped")
+    argparser.add_argument("--no-use-logfile", dest="use_logfile",
+                           action="store_false",
+                           help="Don't use download_log.txt")
+    argparser.set_defaults(use_logfile=True)
+
     return argparser
 
 
@@ -403,6 +411,7 @@ if __name__ == "__main__":
     # than the name given in the category.  We track those names in a
     # file named download_log.txt in the destination directory.
     # TODO: add a flag for turning off that feature.
+    #   eg use-logfile no-use-logfile
     #
     # TODO: 
     # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
@@ -419,7 +428,8 @@ if __name__ == "__main__":
     titles = get_category(args.category)
     if args.prefix:
         titles = filter_titles(titles, args.prefix)
-    titles = get_logged_titles(titles, args.dest)
+    if args.use_logfile:
+        titles = get_logged_titles(titles, args.dest)
 
     count = 0
     for simfile in titles.values():
@@ -430,8 +440,13 @@ if __name__ == "__main__":
             if args.extract:
                 extracted_directory = extract_simfile(simfile, args.dest)
                 if extracted_directory != simfile.name:
-                    log_renaming_message(simfile, extracted_directory, args.dest)
-                    simfile = simfile._replace(name=extracted_directory)
+                    if args.use_logfile:
+                        # If we aren't using the logfile, there will
+                        # be no record of where the file goes, so we
+                        # can't update the location and then delete
+                        # the zip
+                        log_renaming_message(simfile, extracted_directory, args.dest)
+                        simfile = simfile._replace(name=extracted_directory)
                 if (args.tidy and simfile_already_downloaded(simfile,
                                                              args.dest,
                                                              check_zip=False,
