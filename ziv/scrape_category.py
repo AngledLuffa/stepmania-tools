@@ -13,6 +13,10 @@ Run with no arguments to download those files to the current directory.
 
 Run with --help for more help.
 
+If you can't easily add command line arguments (such as running by
+double clicking in Windows), you can change the current week
+downloaded by editing the line
+CURRENT_WEEK = "..."
 """
 
 # Copyright 2016 by John Bauer
@@ -36,6 +40,8 @@ import urllib2
 import zipfile
 from collections import namedtuple
 from HTMLParser import HTMLParser
+
+CURRENT_WEEK = "[Food Week]"
 
 Simfile = namedtuple("Simfile", "simfileid name")
 
@@ -415,12 +421,11 @@ def get_logged_titles(titles, dest):
 
 
 def build_argparser():
-    current_week = "[Food Week]"
-    argparser = argparse.ArgumentParser(description='Download an entire category from z-i-v.  The default arguments download the %s week of the summer 2016 contest.  All you need to do to download that week is run the python script in the directory you want to have the simfiles.  The prefix argument lets you set a prefix, such as a different week of the contest, and the dest argument lets you specify a different directory to store the files.' % current_week)
+    argparser = argparse.ArgumentParser(description='Download an entire category from z-i-v.  The default arguments download the %s week of the summer 2016 contest.  All you need to do to download that week is run the python script in the directory you want to have the simfiles.  The prefix argument lets you set a prefix, such as a different week of the contest, and the dest argument lets you specify a different directory to store the files.' % CURRENT_WEEK)
     argparser.add_argument("--category", default="934",
                            help="Which category number to download")
-    argparser.add_argument("--prefix", default=current_week,
-                           help="Only keep files with this prefix.  Default %s" % current_week)
+    argparser.add_argument("--prefix", default=CURRENT_WEEK,
+                           help="Only keep files with this prefix.  Default %s" % CURRENT_WEEK)
     argparser.add_argument("--dest", default="",
                            help="Where to put the simfiles.  Defaults to CWD")
 
