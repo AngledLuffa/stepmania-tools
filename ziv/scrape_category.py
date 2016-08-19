@@ -41,7 +41,7 @@ import zipfile
 from collections import namedtuple
 from HTMLParser import HTMLParser
 
-CURRENT_WEEK = "[Food Week]"
+CURRENT_WEEK = "[ZIv Academy II]"
 
 Simfile = namedtuple("Simfile", "simfileid name")
 
