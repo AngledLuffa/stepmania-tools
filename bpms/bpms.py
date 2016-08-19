@@ -73,7 +73,7 @@ if __name__ == "__main__":
     print
     print
     print "// OFFSET, BPM DETERMINED BY LSR"
-    print "#OFFSET:%.4f" % B
+    print "#OFFSET:%.4f" % -B
     print "#BPMS:%.4f" % (60.0 / A)
 
     print
