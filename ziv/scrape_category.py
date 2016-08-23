@@ -47,6 +47,15 @@ Simfile = namedtuple("Simfile", "simfileid name")
 
 # create a subclass and override the handler methods
 class CategoryHTMLParser(HTMLParser):
+    """
+    This class parses the Category page on ziv
+
+    For example:
+    http://zenius-i-vanisher.com/v5.2/viewsimfilecategory.php?categoryid=934
+
+    It expects to receive one line of the webpage from the category
+    and extracts the title and simfile id from that line.
+    """
     def __init__(self):
         HTMLParser.__init__(self)
         self.simfileid = None
