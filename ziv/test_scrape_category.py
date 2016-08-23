@@ -9,9 +9,9 @@ EXPECTED_SIMFILES = {
     '27255': scrape_category.Simfile(simfileid='27255', name='Xingfu de Ditu', age=18000),
     '26965': scrape_category.Simfile(simfileid='26965', name="Don't Sleep in the Subway", age=138240),
     '27015': scrape_category.Simfile(simfileid='27015', name='Ai Qing Fu Xing', age=60),
-    '27017': scrape_category.Simfile(simfileid='27017', name='You Baby', age=31536000),
+    '27017': scrape_category.Simfile(simfileid='27017', name='You Baby', age=31622400),
     '26969': scrape_category.Simfile(simfileid='26969', name='Dai Yan Ren', age=1451520),
-    '27069': scrape_category.Simfile(simfileid='27069', name='Cruise', age=24192000)
+    '27069': scrape_category.Simfile(simfileid='27069', name='Cruise', age=26784000)
 }
 
 EXPECTED_FILTERED = {
@@ -25,7 +25,7 @@ def compare_simfile_records(results, expected):
     assert len(results) == len(expected)
     for i in expected:
         assert i in results
-        assert results[i] == expected[i]
+        assert results[i] == expected[i], "Expected {} got {}".format(expected[i], results[i])
 
 
 class TestScrapeCategory(unittest.TestCase):
