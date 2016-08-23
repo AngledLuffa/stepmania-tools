@@ -48,21 +48,53 @@ Simfile = namedtuple("Simfile", "simfileid name")
 # create a subclass and override the handler methods
 class CategoryHTMLParser(HTMLParser):
     """
-    This class parses the Category page on ziv
+    This class parses a Category page from ziv
 
     For example:
     http://zenius-i-vanisher.com/v5.2/viewsimfilecategory.php?categoryid=934
 
-    It expects to receive one line of the webpage from the category
-    and extracts the title and simfile id from that line.
+    It looks for the first table in the webpage, then extracts the
+    song ids and names from that table.
+
+    TODO: An HTML parser that builds an object tree might be easier to
+    work with, since we know exactly what format we are working with,
+    but for now this is effective.  One disadvantage of looking for
+    such a tree is there might not be one in the standard Python
+    library, which would make it harder for other people to use.
     """
     def __init__(self):
         HTMLParser.__init__(self)
+        self.simfiles = {}
+
         self.simfileid = None
         self.title = None
+
+        self.in_table = False
+        self.finished_table = False
+        self.tr_count = 0
         self.in_title = False
 
     def handle_starttag(self, tag, attrs):
+        if self.finished_table:
+            return
+        if not self.in_table and tag == 'table':
+            self.in_table = True
+            return
+
+        if not self.in_table:
+            return
+
+        if tag == 'tr':
+            self.tr_count = self.tr_count + 1
+            return
+
+        if self.tr_count < 3:
+            return
+
+        # we know we are in the table with the songs
+        # we have seen two rows
+        # now we are looking for the name and id of the next simfile
+
         if self.simfileid is None and tag == 'a':
             for attr in attrs:
                 if attr[0] == "name":
@@ -85,10 +117,19 @@ class CategoryHTMLParser(HTMLParser):
             assert tag == "a"
             self.in_title = False
 
-    def feed(self, data):
-        HTMLParser.feed(self, data)
-        assert self.title is not None
-        assert self.simfileid is not None
+        if self.in_table and tag == 'tr' and self.simfileid is not None:
+            # finished a row
+            assert self.title is not None
+            self.simfiles[self.simfileid] = Simfile(self.simfileid, self.title)
+            self.simfileid = None
+            self.title = None
+
+        if self.in_table and tag == 'table':
+            self.in_table = False
+            self.finished_table = True
+
+    #def feed(self, data):
+    #    HTMLParser.feed(self, data)
 
 class DownloadHTMLParser(HTMLParser):
     def __init__(self):
@@ -156,14 +197,10 @@ def get_category_from_ziv(category, url=ZIV_CATEGORY):
     print "Downloading category from:"
     print url
 
-    content = get_content(url)
-    link_lines = [x for x in content if "viewsimfile.php?simfileid" in x]
-
-    results = {}
-    for i in link_lines:
-        parser = CategoryHTMLParser()
-        parser.feed(i)
-        results[parser.simfileid] = Simfile(parser.simfileid, parser.title)
+    content = get_content(url, split=False)
+    parser = CategoryHTMLParser()
+    parser.feed(content)
+    results = parser.simfiles
 
     print "Found %d simfiles" % len(results)
 
