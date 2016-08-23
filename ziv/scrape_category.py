@@ -43,7 +43,11 @@ from HTMLParser import HTMLParser
 
 CURRENT_WEEK = "[ZIv Academy II]"
 
-Simfile = namedtuple("Simfile", "simfileid name")
+Simfile = namedtuple("Simfile", "simfileid name age")
+
+def parse_age(age):
+    # TODO: turn the ziv age cells into actual numbers
+    return age
 
 # create a subclass and override the handler methods
 class CategoryHTMLParser(HTMLParser):
@@ -68,16 +72,22 @@ class CategoryHTMLParser(HTMLParser):
 
         self.simfileid = None
         self.title = None
+        self.age = None
 
         self.in_table = False
         self.finished_table = False
         self.tr_count = 0
         self.in_title = False
 
+        self.in_age = False
+
     def handle_starttag(self, tag, attrs):
         if self.finished_table:
             return
+
         if not self.in_table and tag == 'table':
+            # the first table on the ziv category pages is the one
+            # which contains the simfile information
             self.in_table = True
             return
 
@@ -89,6 +99,7 @@ class CategoryHTMLParser(HTMLParser):
             return
 
         if self.tr_count < 3:
+            # the first two rows of the first table are headers
             return
 
         # we know we are in the table with the songs
@@ -102,8 +113,13 @@ class CategoryHTMLParser(HTMLParser):
             if self.simfileid is None:
                 raise RuntimeError("Link does not have name: {}".format(attrs))
             self.in_title = True
+        elif self.simfileid is not None and self.age is None and tag == 'td':
+            self.in_age = True
 
     def handle_data(self, data):
+        if self.finished_table:
+            return
+
         if self.in_title:
             if self.title is None:
                 self.title = data
@@ -111,18 +127,30 @@ class CategoryHTMLParser(HTMLParser):
                 # z-i-v doesn't properly write &amp; so we assume
                 # the data is split on &
                 self.title = self.title + "&" + data
+        elif self.in_age:
+            # "age" table cells don't seem to contain &
+            self.age = data
 
     def handle_endtag(self, tag):
+        if self.finished_table:
+            return
+
         if self.in_title:
             assert tag == "a"
             self.in_title = False
 
+        if self.in_age and tag == 'td':
+            self.in_age = False
+
         if self.in_table and tag == 'tr' and self.simfileid is not None:
             # finished a row
             assert self.title is not None
-            self.simfiles[self.simfileid] = Simfile(self.simfileid, self.title)
+            assert not self.in_title
+            assert not self.in_age
+            self.simfiles[self.simfileid] = Simfile(self.simfileid, self.title, parse_age(self.age))
             self.simfileid = None
             self.title = None
+            self.age = None
 
         if self.in_table and tag == 'table':
             self.in_table = False
@@ -469,7 +497,7 @@ def get_logged_titles(titles, dest):
             name = match.groups()[1]
             if simfileid not in titles:
                 continue
-            updated[simfileid] = Simfile(simfileid, name)
+            updated[simfileid] = titles[simfileid]._replace(name=name)
     return updated
 
 
