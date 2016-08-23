@@ -6,17 +6,17 @@ import scrape_category
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
 
 EXPECTED_SIMFILES = {
-    '27255': scrape_category.Simfile(simfileid='27255', name='Xingfu de Ditu', age='5 hours ago'),
-    '26965': scrape_category.Simfile(simfileid='26965', name="Don't Sleep in the Subway", age='1.6 days ago'),
-    '27015': scrape_category.Simfile(simfileid='27015', name='Ai Qing Fu Xing', age='1 minute ago'),
-    '27017': scrape_category.Simfile(simfileid='27017', name='You Baby', age='1 year ago'),
-    '26969': scrape_category.Simfile(simfileid='26969', name='Dai Yan Ren', age='2.4 weeks ago'),
-    '27069': scrape_category.Simfile(simfileid='27069', name='Cruise', age='10 months ago')
+    '27255': scrape_category.Simfile(simfileid='27255', name='Xingfu de Ditu', age=18000),
+    '26965': scrape_category.Simfile(simfileid='26965', name="Don't Sleep in the Subway", age=138240),
+    '27015': scrape_category.Simfile(simfileid='27015', name='Ai Qing Fu Xing', age=60),
+    '27017': scrape_category.Simfile(simfileid='27017', name='You Baby', age=31536000),
+    '26969': scrape_category.Simfile(simfileid='26969', name='Dai Yan Ren', age=1451520),
+    '27069': scrape_category.Simfile(simfileid='27069', name='Cruise', age=24192000)
 }
 
 EXPECTED_FILTERED = {
-    '26965': scrape_category.Simfile(simfileid='26965', name="Don't Sleep in the Subway", age='1.6 days ago'),
-    '26969': scrape_category.Simfile(simfileid='26969', name='Dai Yan Ren', age='2.4 weeks ago'),
+    '26965': scrape_category.Simfile(simfileid='26965', name="Don't Sleep in the Subway", age=138240),
+    '26969': scrape_category.Simfile(simfileid='26969', name='Dai Yan Ren', age=1451520),
 }
 
 def compare_simfile_records(results, expected):

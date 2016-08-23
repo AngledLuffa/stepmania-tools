@@ -45,9 +45,35 @@ CURRENT_WEEK = "[ZIv Academy II]"
 
 Simfile = namedtuple("Simfile", "simfileid name age")
 
+AGE_PATTERN = re.compile('^([0-9.]+) (second|minute|hour|day|week|month|year)s? ago$')
+
+AGE_INTERVALS = {
+    'second' : 1,
+    'minute' : 60,
+    'hour' : 60 * 60,
+    'day' : 60 * 60 * 24,
+    'week' : 60 * 60 * 24 * 7,
+    'month' : 60 * 60 * 24 * 31,
+    'year' : 60 * 60 * 24 * 366
+}
+
 def parse_age(age):
-    # TODO: turn the ziv age cells into actual numbers
-    return age
+    """
+    Turn a z-i-v age string to a number of seconds since update.
+
+    Goal is to overestimate, since this will be used to prescreen
+    files we don't need to download when looking for newer files.
+    """
+    match = AGE_PATTERN.match(age.strip())
+    if not match:
+        raise RuntimeError("Cannot process '%s' as a simfile age" % age)
+    length = float(match.groups()[0])
+    interval = match.groups()[1]
+    if interval not in AGE_INTERVALS:
+        raise RuntimeError("Unknown interval '%s' extracted from '%s'" %
+                           (interval, age))
+    return int(length * AGE_INTERVALS[interval])
+
 
 # create a subclass and override the handler methods
 class CategoryHTMLParser(HTMLParser):
