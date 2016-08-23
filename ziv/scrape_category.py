@@ -231,11 +231,14 @@ def get_file_link_from_ziv(simfileid):
     return link
 
 
-def filter_titles(titles, prefix):
+def filter_simfiles_prefix(simfiles, prefix):
+    """
+    Given a map of simfile objects, only keep those which start with prefix
+    """
     filtered = {}
-    for x in titles.keys():
-        if titles[x].name.startswith(prefix):
-            filtered[x] = titles[x]
+    for x in simfiles.keys():
+        if simfiles[x].name.startswith(prefix):
+            filtered[x] = simfiles[x]
     return filtered
 
 
@@ -574,7 +577,7 @@ if __name__ == "__main__":
 
     titles = get_category_from_ziv(args.category)
     if args.prefix:
-        titles = filter_titles(titles, args.prefix)
+        titles = filter_simfiles_prefix(titles, args.prefix)
         print "%d simfiles matched pattern" % len(titles)
     if args.use_logfile:
         titles = get_logged_titles(titles, args.dest)
