@@ -140,14 +140,18 @@ def get_content(url, split=True):
 
     return content
 
+ZIV_CATEGORY = "http://zenius-i-vanisher.com/v5.2/viewsimfilecategory.php?categoryid=%s"
 
-def get_category_from_ziv(category):
+def get_category_from_ziv(category, url=ZIV_CATEGORY):
     """
     Returns a list of files in the category.
 
     The result is a list of Simfile tuples: simfile id, name.
+
+    Passing in the base url for the category is useful to test
+    from a local file.
     """
-    url = "http://zenius-i-vanisher.com/v5.2/viewsimfilecategory.php?categoryid=%s" % category
+    url = url % category
 
     print "Downloading category from:"
     print url
