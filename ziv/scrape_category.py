@@ -33,10 +33,12 @@ CURRENT_WEEK = "..."
 
 import argparse
 import codecs
+import datetime
 import os
 import re
 import sys
 import urllib2
+import time
 import zipfile
 from collections import namedtuple
 from HTMLParser import HTMLParser
@@ -73,6 +75,24 @@ def parse_age(age):
         raise RuntimeError("Unknown interval '%s' extracted from '%s'" %
                            (interval, age))
     return int(length * AGE_INTERVALS[interval])
+
+
+def parse_update_threshold(since):
+    if AGE_PATTERN.match(since):
+        age = parse_age(since)
+        return time.time() - age
+    raise RuntimeError("Unable to parse '%s'" % since)
+
+
+def filter_simfiles_since(simfiles, since):
+    now = time.time()
+    last_update_threshold = parse_update_threshold(since)
+    print "Only downloading files more recent than %s" % datetime.datetime.fromtimestamp(last_update_threshold)
+    filtered = {}
+    for x in simfiles:
+        if now - simfiles[x].age > last_update_threshold:
+            filtered[x] = simfiles[x]
+    return filtered
 
 
 # create a subclass and override the handler methods
@@ -532,7 +552,7 @@ def build_argparser():
     argparser.add_argument("--category", default="934",
                            help="Which category number to download")
     argparser.add_argument("--prefix", default=CURRENT_WEEK,
-                           help="Only keep files with this prefix.  Default %s" % CURRENT_WEEK)
+                           help="Only download files with this prefix.  Default %s" % CURRENT_WEEK)
     argparser.add_argument("--dest", default="",
                            help="Where to put the simfiles.  Defaults to CWD")
 
@@ -557,6 +577,9 @@ def build_argparser():
                            action="store_false",
                            help="Don't use download_log.txt")
     argparser.set_defaults(use_logfile=True)
+
+    argparser.add_argument("--since", default="",
+                           help="Only download files updated since this date.  Setting this argument will re-download existing simfiles.")
 
     return argparser
 
@@ -617,7 +640,10 @@ if __name__ == "__main__":
     # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
     #
     # TODO features:
-    # Add a flag for dates to search for
+    # Added a --since flag, but --before would be nice too.
+    # Add a --force option for date ranges
+    # Add an option to look at the dates of the existing files and
+    #   update newer ones
     # Search all directories for the files, in case you are
     #   rearranging the files after downloading?
     #
@@ -633,6 +659,9 @@ if __name__ == "__main__":
     if args.prefix:
         titles = filter_simfiles_prefix(titles, args.prefix)
         print "%d simfiles matched pattern" % len(titles)
+    if args.since:
+        titles = filter_simfiles_since(titles, args.since)
+        print "%d simfiles matched date" % len(titles)
     if args.use_logfile:
         titles = get_logged_titles(titles, args.dest)
 

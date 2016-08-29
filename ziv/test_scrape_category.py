@@ -16,7 +16,17 @@ EXPECTED_SIMFILES = {
 
 EXPECTED_FILTERED = {
     '26965': scrape_category.Simfile(simfileid='26965', name="Don't Sleep in the Subway", age=138240),
-    '26969': scrape_category.Simfile(simfileid='26969', name='Dai Yan Ren', age=1451520),
+    '26969': scrape_category.Simfile(simfileid='26969', name='Dai Yan Ren', age=1451520)
+}
+
+EXPECTED_FIVE_MINUTES = {
+    '27015': scrape_category.Simfile(simfileid='27015', name='Ai Qing Fu Xing', age=60)
+}
+
+EXPECTED_ONE_WEEK = {
+    '27015': scrape_category.Simfile(simfileid='27015', name='Ai Qing Fu Xing', age=60),
+    '27255': scrape_category.Simfile(simfileid='27255', name='Xingfu de Ditu', age=18000),
+    '26965': scrape_category.Simfile(simfileid='26965', name="Don't Sleep in the Subway", age=138240)
 }
 
 def compare_simfile_records(results, expected):
@@ -39,9 +49,15 @@ class TestScrapeCategory(unittest.TestCase):
         compare_simfile_records(simfiles, EXPECTED_SIMFILES)
 
 class TestUtilityMethods(unittest.TestCase):
-    def test_filter(self):
+    def test_filter_prefix(self):
         filtered = scrape_category.filter_simfiles_prefix(EXPECTED_SIMFILES, "D")
         compare_simfile_records(filtered, EXPECTED_FILTERED)
+
+    def test_filter_since(self):
+        filtered = scrape_category.filter_simfiles_since(EXPECTED_SIMFILES, "5 minutes ago")
+        compare_simfile_records(filtered, EXPECTED_FIVE_MINUTES)
+        filtered = scrape_category.filter_simfiles_since(EXPECTED_SIMFILES, "1 week ago")
+        compare_simfile_records(filtered, EXPECTED_ONE_WEEK)
 
 if __name__ == '__main__':
     unittest.main()
