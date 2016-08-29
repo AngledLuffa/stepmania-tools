@@ -43,7 +43,7 @@ import zipfile
 from collections import namedtuple
 from HTMLParser import HTMLParser
 
-CURRENT_WEEK = "[ZIv Academy II]"
+CURRENT_WEEK = "[Gimmick Week]"
 
 Simfile = namedtuple("Simfile", "simfileid name age")
 
@@ -486,7 +486,7 @@ def extract_simfile(simfile, dest):
             extracted_directory = get_directory(simzip)
             extracted_directory = extracted_directory.strip()
             extract_fixing_spaces(simzip, dest, extracted_directory)
-    except (zipfile.BadZipfile, IOError) as e:
+    except (zipfile.BadZipfile, IOError, WindowsError) as e:
         print "Unable to extract %s" % filename
     if simzip is not None:
         simzip.close()
@@ -638,6 +638,7 @@ if __name__ == "__main__":
     #
     # TODO: 
     # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
+    # ? need to be sanitized in filenames
     #
     # TODO features:
     # Added a --since flag, but --before would be nice too.
