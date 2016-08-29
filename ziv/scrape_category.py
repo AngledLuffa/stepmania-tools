@@ -323,7 +323,7 @@ def simfile_already_downloaded(simfile, dest, check_zip=True, verbose=True):
             print 'Directory already exists: "%s"' % filename
         return True
 
-    filename = os.path.join(dest, simfile.name.strip())
+    filename = os.path.join(dest, sanitize_name(simfile.name))
     if os.path.exists(filename):
         if verbose:
             print 'Directory already exists: "%s"' % filename
@@ -423,7 +423,7 @@ def extract_fixing_spaces(simzip, dest, inner_directory):
     method fixes it by reading the files manually and writing them to
     the correct location.
     """
-    inner_directory = inner_directory.strip()
+    inner_directory = sanitize_name(inner_directory)
     directory = os.path.join(dest, inner_directory)
     os.mkdir(directory)
 
@@ -433,7 +433,7 @@ def extract_fixing_spaces(simzip, dest, inner_directory):
     namelist.sort(key=len)
 
     for name in namelist:
-        path_pieces = [x.strip() for x in name.split("/")]
+        path_pieces = [sanitize_name(x) for x in name.split("/")]
         if path_pieces[0] != inner_directory:
             # this can happen in the case of a file with no inner folder
             path_pieces = [inner_directory] + path_pieces
@@ -450,6 +450,11 @@ def extract_fixing_spaces(simzip, dest, inner_directory):
         fout = open(new_name, "wb")
         fout.write(data)
         fout.close()
+
+
+def sanitize_name(name):
+    # TODO: there are a few other characters to remove on Windows
+    return name.strip().replace("?", "").replace("*", "").replace('"', "")
 
 
 def extract_simfile(simfile, dest):
@@ -474,7 +479,7 @@ def extract_simfile(simfile, dest):
         if flat_directory_structure(simzip):
             # There is no inner directory, but we will treat the
             # directory we create as the location for the files
-            extracted_directory = simfile.name.strip()
+            extracted_directory = sanitize_name(simfile.name)
             extract_fixing_spaces(simzip, dest, extracted_directory)
         elif not valid_directory_structure(simzip):
             print "Invalid directory structure in %s" % filename
@@ -484,7 +489,7 @@ def extract_simfile(simfile, dest):
             # Another reason we can't use extractall because we want
             # to eliminate files such as _MACOSX
             extracted_directory = get_directory(simzip)
-            extracted_directory = extracted_directory.strip()
+            extracted_directory = sanitize_name(extracted_directory)
             extract_fixing_spaces(simzip, dest, extracted_directory)
     except (zipfile.BadZipfile, IOError, WindowsError) as e:
         print "Unable to extract %s" % filename
