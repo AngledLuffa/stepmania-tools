@@ -632,6 +632,7 @@ if __name__ == "__main__":
     #
     # If a directory has trailing whitespace, such as 29308,
     # the files are extracted manually to the correct location.
+    # ? and * also get removed.
     #
     # Some files, such as 29437, extract to a different folder name
     # than the name given in the category.  We track those names in a
@@ -643,7 +644,6 @@ if __name__ == "__main__":
     #
     # TODO: 
     # 29287 from Midspeed does not unzip correctly, zipfile.BadZipfile
-    # ? need to be sanitized in filenames
     #
     # TODO features:
     # Added a --since flag, but --before would be nice too.
