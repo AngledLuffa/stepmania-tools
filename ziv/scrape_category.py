@@ -43,7 +43,7 @@ import zipfile
 from collections import namedtuple
 from HTMLParser import HTMLParser
 
-CURRENT_WEEK = "[You Won't See This In DDR V]"
+CURRENT_WEEK = "[Combine Week]"
 
 Simfile = namedtuple("Simfile", "simfileid name age")
 
