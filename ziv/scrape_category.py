@@ -17,6 +17,16 @@ If you can't easily add command line arguments (such as running by
 double clicking in Windows), you can change the current week
 downloaded by editing the line
 CURRENT_WEEK = "..."
+
+If you want to download a different category, there is a line below
+with "--category" in it.  In that line, change the number after
+"default" to the number of the category you want to download.
+Make sure to keep the quotes, as in "899".  You will need to change
+CURRENT_WEEK=""
+to get that to work.
+
+Unforunately, private categories are currently not supported,
+as they would require logging in.
 """
 
 # Copyright 2016 by John Bauer
@@ -528,7 +538,7 @@ def renaming_message(simfile, actual):
 def log_renaming_message(simfile, actual, dest):
     message = renaming_message(simfile, actual)
     log_filename = get_log_filename(dest)
-    with open(log_filename, "a") as fout:
+    with codecs.open(log_filename, "a", encoding="utf-8") as fout:
         fout.write(message)
         fout.write("\n")
         fout.close()
@@ -539,7 +549,7 @@ def get_logged_titles(titles, dest):
     updated = titles.copy()
     if not os.path.exists(log_filename):
         return updated
-    with open(log_filename) as fin:
+    with codecs.open(log_filename, encoding="utf-8") as fin:
         for line in fin.readlines():
             match = LOG_PATTERN.match(line.strip())
             if not match:
