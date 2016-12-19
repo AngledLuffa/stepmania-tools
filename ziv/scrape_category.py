@@ -53,7 +53,8 @@ import zipfile
 from collections import namedtuple
 from HTMLParser import HTMLParser
 
-CURRENT_WEEK = "[Combine Week]"
+CURRENT_WEEK = "[Round B]"
+DEFAULT_CATEGORY = "957"
 
 Simfile = namedtuple("Simfile", "simfileid name age")
 
@@ -568,7 +569,8 @@ def get_logged_titles(titles, dest):
 
 def build_argparser():
     argparser = argparse.ArgumentParser(description='Download an entire category from z-i-v.  The default arguments download the %s week of the summer 2016 contest.  All you need to do to download that week is run the python script in the directory you want to have the simfiles.  The prefix argument lets you set a prefix, such as a different week of the contest, and the dest argument lets you specify a different directory to store the files.' % CURRENT_WEEK)
-    argparser.add_argument("--category", default="934",
+    argparser.add_argument("--category",
+                           default="{}".format(DEFAULT_CATEGORY),
                            help="Which category number to download")
     argparser.add_argument("--prefix", default=CURRENT_WEEK,
                            help="Only download files with this prefix.  Default %s" % CURRENT_WEEK)
