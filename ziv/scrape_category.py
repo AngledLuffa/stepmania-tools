@@ -46,6 +46,7 @@ import codecs
 import datetime
 import os
 import re
+import shutil
 import sys
 import urllib2
 import time
@@ -510,8 +511,8 @@ def extract_simfile(simfile, dest):
             extracted_directory = sanitize_name(extracted_directory)
             extract_fixing_spaces(simzip, dest, extracted_directory)
     except (zipfile.BadZipfile, IOError, WindowsError) as e:
-        # TODO: a partially extracted zip might leave behind some junk
         print "Unable to extract %s" % filename
+        shutil.rmtree(extracted_directory)
     if simzip is not None:
         simzip.close()
 
