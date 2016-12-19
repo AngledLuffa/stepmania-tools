@@ -363,7 +363,7 @@ def valid_zipfile_directory_structure(filename):
         result = valid_directory_structure(simzip=simzip)
         simzip.close()
         return result
-    except (zipfile.BadZipfile, IOError) as e:
+    except (zipfile.BadZipfile, IOError):
         return False
     finally:
         if simzip != None:
@@ -501,7 +501,7 @@ def extract_simfile(simfile, dest):
             extracted_directory = get_directory(simzip)
             extracted_directory = sanitize_name(extracted_directory)
             extract_fixing_spaces(simzip, dest, extracted_directory)
-    except (zipfile.BadZipfile, IOError, WindowsError) as e:
+    except (zipfile.BadZipfile, IOError, WindowsError):
         print "Unable to extract %s" % filename
     if simzip is not None:
         simzip.close()
@@ -599,10 +599,10 @@ def build_argparser():
     return argparser
 
 
-def download_simfile(simfile, dest, tidy, use_logfile):
+def download_simfile(simfile, dest, tidy, use_logfile, extract):
     link = get_file_link_from_ziv(simfile.simfileid)
     get_simfile_from_ziv(simfile, link, dest)
-    if args.extract:
+    if extract:
         extracted_directory = extract_simfile(simfile, dest)
         if (extracted_directory is not None and
             extracted_directory != simfile.name):
@@ -620,7 +620,7 @@ def download_simfile(simfile, dest, tidy, use_logfile):
             unlink_zip(simfile, dest)
 
 
-def download_simfiles(titles, dest, tidy, use_logfile):
+def download_simfiles(titles, dest, tidy, use_logfile, extract):
     """
     Downloads the simfiles and returns how many zips were actually downloaded.
 
@@ -631,9 +631,9 @@ def download_simfiles(titles, dest, tidy, use_logfile):
     """
     count = 0
     for simfile in titles.values():
-        if not simfile_already_downloaded(simfile, args.dest):
+        if not simfile_already_downloaded(simfile, dest):
             count = count + 1
-            download_simfile(simfile, dest, tidy, use_logfile)
+            download_simfile(simfile, dest, tidy, use_logfile, extract)
     return count
 
 if __name__ == "__main__":
@@ -681,5 +681,6 @@ if __name__ == "__main__":
     if args.use_logfile:
         titles = get_logged_titles(titles, args.dest)
 
-    count = download_simfiles(titles, args.dest, args.tidy, args.use_logfile)
+    count = download_simfiles(titles, args.dest, args.tidy, 
+                              args.use_logfile, args.extract)
     print "Downloaded %d simfiles" % count
