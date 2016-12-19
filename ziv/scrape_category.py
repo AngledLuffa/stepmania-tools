@@ -463,7 +463,11 @@ def extract_fixing_spaces(simzip, dest, inner_directory):
 
 
 def sanitize_name(name):
-    # TODO: there are a few other characters to remove on Windows
+    """
+    Remove ?*" to sanitize Windows filenames.
+
+    TODO: there are a few other characters to remove on Windows
+    """
     return name.strip().replace("?", "").replace("*", "").replace('"', "")
 
 
