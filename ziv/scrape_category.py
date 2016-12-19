@@ -636,7 +636,8 @@ def download_simfiles(titles, dest, tidy, use_logfile, extract):
             download_simfile(simfile, dest, tidy, use_logfile, extract)
     return count
 
-if __name__ == "__main__":
+
+def main():
     # If a file doesn't have an inner folder, such as 29303,
     # we extract the zip to the correct location.
     #
@@ -684,3 +685,6 @@ if __name__ == "__main__":
     count = download_simfiles(titles, args.dest, args.tidy, 
                               args.use_logfile, args.extract)
     print "Downloaded %d simfiles" % count
+
+if __name__ == "__main__":
+    main()
