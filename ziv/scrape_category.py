@@ -469,7 +469,10 @@ def sanitize_name(name):
 
     TODO: there are a few other characters to remove on Windows
     """
-    return name.strip().replace("?", "").replace("*", "").replace('"', "")
+    name = name.strip().replace("?", "").replace("*", "").replace('"', "")
+    name = re.sub("[.]+", ".", name)
+    name = re.sub("[.]$", ".", name)
+    return name
 
 
 def extract_simfile(simfile, dest):
@@ -506,7 +509,8 @@ def extract_simfile(simfile, dest):
             extracted_directory = get_directory(simzip)
             extracted_directory = sanitize_name(extracted_directory)
             extract_fixing_spaces(simzip, dest, extracted_directory)
-    except (zipfile.BadZipfile, IOError, WindowsError):
+    except (zipfile.BadZipfile, IOError, WindowsError) as e:
+        # TODO: a partially extracted zip might leave behind some junk
         print "Unable to extract %s" % filename
     if simzip is not None:
         simzip.close()
@@ -650,6 +654,8 @@ def main():
     # If a directory has trailing whitespace, such as 29308,
     # the files are extracted manually to the correct location.
     # ? and * also get removed.
+    #
+    # 30853 has consecutive . which also confuses Windows.
     #
     # Some files, such as 29437, extract to a different folder name
     # than the name given in the category.  We track those names in a
