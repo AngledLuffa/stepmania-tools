@@ -46,7 +46,6 @@ import codecs
 import datetime
 import os
 import re
-import shutil
 import sys
 import urllib2
 import time
@@ -107,7 +106,6 @@ def filter_simfiles_since(simfiles, since):
     return filtered
 
 
-# create a subclass and override the handler methods
 class CategoryHTMLParser(HTMLParser):
     """
     This class parses a Category page from ziv
@@ -512,7 +510,11 @@ def extract_simfile(simfile, dest):
             extract_fixing_spaces(simzip, dest, extracted_directory)
     except (zipfile.BadZipfile, IOError, WindowsError) as e:
         print "Unable to extract %s" % filename
-        shutil.rmtree(extracted_directory)
+        if (extracted_directory is not None and
+            os.path.exists(extracted_directory)):
+            print "Warning: there may be a partial download in %s" % extracted_directory
+            # return None so the caller doesn't clean up the .zip
+            extracted_directory = None
     if simzip is not None:
         simzip.close()
 
