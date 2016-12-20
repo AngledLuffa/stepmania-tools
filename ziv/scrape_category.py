@@ -1,7 +1,7 @@
 """
 Downloads a category of simfiles from ZiV.  The default is to
 download the current week of the summer 2016 contest (as of
-2016-08-15) to the current directory.
+2016-12-19) to the current directory.
 
 If you are reading this on github and looking for a way to download
 the script, look for the button labeled "Raw" to the upper right.
