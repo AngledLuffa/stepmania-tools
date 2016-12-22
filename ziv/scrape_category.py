@@ -215,6 +215,68 @@ class CategoryHTMLParser(HTMLParser):
     #def feed(self, data):
     #    HTMLParser.feed(self, data)
 
+
+class SimfileHomepageHTMLParser(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.in_platforms = False
+        self.in_new_platform = False
+        self.finished_platforms = False
+        self.platforms = {}
+        self.category_name = ""
+        self.category_index = "0"
+
+    def handle_starttag(self, tag, attrs):
+        if self.in_platforms and tag == 'tr':
+            self.in_new_platform = True
+            self.platform_name = ""
+
+        if self.in_platforms and tag == 'option':
+            value_attrs = [x[1] for x in attrs if x[0] == 'value']
+            if len(value_attrs) < 1:
+                raise RuntimeError("Found an option with no value")
+            self.category_index = value_attrs[0].strip()
+
+    def handle_data(self, data):
+        if data == 'Platform':
+            if self.in_platforms or self.finished_platforms:
+                raise RuntimeError("Found two Platform sections")
+            self.in_platforms = True
+            return
+
+        if self.in_new_platform:
+            # The text immediately after <tr> is the name of the
+            # platform, eg Arcade, etc
+            self.platform_name = self.platform_name + data
+            return
+
+        if self.in_platforms:
+            # All other relevant text is the name of the category
+            self.category_name = self.category_name + data
+
+
+    def handle_endtag(self, tag):
+        if not self.in_platforms:
+            return
+
+        if tag == 'td' and self.in_new_platform:
+            # When reading the name of a new platform, the </td> tells
+            # us when its name is finished
+            self.in_new_platform = False
+            self.platform_name = self.platform_name.strip()
+            self.platforms[self.platform_name] = []
+
+        if tag == 'option':
+            if self.category_index != '0':
+                self.category_name = self.category_name.strip()
+                self.platforms[self.platform_name].append((self.category_index, self.category_name))
+            self.category_index = '0'
+            self.category_name = ""
+
+        if tag == 'table':
+            self.in_platforms = False
+            self.finished_platforms = True
+
 class DownloadHTMLParser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
@@ -264,6 +326,24 @@ def get_content(url, split=True):
         content = content.split("\n")
 
     return content
+
+
+ZIV_SIMFILE_CATEGORIES = "https://zenius-i-vanisher.com/v5.2/simfiles.php?category=simfiles"
+
+def scrape_platforms(url=ZIV_SIMFILE_CATEGORIES):
+    """
+    Returns a map from platform to list of categories for that platform.
+
+    The url can be set to read from z-i-v or from a unit test file.
+    """
+    print "Downloading simfiles home page from:"
+    print url
+
+    content = get_content(url, split=False)
+    parser = SimfileHomepageHTMLParser()
+    parser.feed(content)
+    return parser.platforms
+
 
 ZIV_CATEGORY = "http://zenius-i-vanisher.com/v5.2/viewsimfilecategory.php?categoryid=%s"
 

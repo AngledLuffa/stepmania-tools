@@ -59,5 +59,21 @@ class TestUtilityMethods(unittest.TestCase):
         filtered = scrape_category.filter_simfiles_since(EXPECTED_SIMFILES, "1 week ago")
         compare_simfile_records(filtered, EXPECTED_ONE_WEEK)
 
+class TestScrapeHomepage(unittest.TestCase):
+    PLATFORMS_URL = "file:///" + MODULE_DIR + "/test/simfile_homepage.html"
+
+    def test_get_platforms(self):
+        platforms = scrape_category.scrape_platforms(self.PLATFORMS_URL)
+
+        expected_platforms = set(["Arcade", "PlayStation 2", "PlayStation 3",
+                                  "Wii", "GameCube", "Xbox", "Xbox 360",
+                                  "Mobile", "User"])
+
+        assert set(platforms.keys()) == expected_platforms
+        assert len(platforms['Arcade']) == 32
+        arcade_category = platforms['Arcade'][0]
+        assert arcade_category[0] == "37"
+        assert arcade_category[1] == "Dance Dance Revolution (AC) (Japan)"
+
 if __name__ == '__main__':
     unittest.main()
