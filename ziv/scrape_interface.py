@@ -1,34 +1,41 @@
 """
 Done:
 have a menu listing the categories you can download (done)
+file picker to choose the directory to save to
 
 TODO:
-file picker to choose the directory to save to
-  (remember this directory between executions?)
 have a text field offering with a prefix you can limit to
 add a text field for regex as well
 button that launches the download
 button that reloads the categories
 
-advanced: a progress bar
+advanced:
+a progress bar
+remember the download directory between executions
 """
+
+import os
 
 import Tkinter as tk
 import ttk
+import tkFileDialog
+
 import scrape_category
 
 class App(tk.Tk):
 
     def __init__(self, master, category_map):
 
-        frame = tk.Frame(master)
-        frame.pack()
+        self.frame = tk.Frame(master)
+        self.frame.pack()
+
+        self.category_map = category_map
 
         platform_list = list(category_map.keys())
         max_width = max(len(x) for x in platform_list)
         self.platform_var = tk.StringVar()
         self.platform_var.set(platform_list[0])
-        self.platform_drop = ttk.Combobox(frame,
+        self.platform_drop = ttk.Combobox(self.frame,
                                           textvariable=self.platform_var,
                                           values=platform_list,
                                           state="readonly",
@@ -41,7 +48,7 @@ class App(tk.Tk):
                         for platform in category_map.values())
         self.category_var = tk.StringVar()
         self.category_var.set(category_list[0])
-        self.category_drop = ttk.Combobox(frame,
+        self.category_drop = ttk.Combobox(self.frame,
                                           textvariable=self.category_var,
                                           values=category_list,
                                           state="readonly",
@@ -49,7 +56,20 @@ class App(tk.Tk):
         self.category_drop.bind("<<ComboboxSelected>>", self.choose_category)
         self.category_drop.pack()
 
-        self.category_map = category_map
+        directory_chooser = tk.Button(self.frame,
+                                      text='askdirectory',
+                                      command=self.ask_directory)
+        directory_chooser.pack(anchor="w", side=tk.LEFT)
+        self.directory_var = tk.StringVar()
+        self.directory_var.set(os.getcwd())
+        label = ttk.Label(self.frame, textvariable=self.directory_var)
+        label.pack(side=tk.LEFT)
+
+    def ask_directory(self):
+        new_dir = tkFileDialog.askdirectory(parent=self.frame,
+                                            title="Directory to save simfiles")
+        if new_dir:
+            self.directory_var.set(new_dir)
         
     def choose_platform(self, event):
         platform = self.platform_var.get()
