@@ -217,16 +217,26 @@ class CategoryHTMLParser(HTMLParser):
 
 
 class SimfileHomepageHTMLParser(HTMLParser):
+    """
+    Downloads the simfiles platforms/categories page.
+
+    Results are kept in a member variable in the format
+    OrderedDict platform -> categories for that platform
+      OrderedDict category -> category id
+    """
     def __init__(self):
         HTMLParser.__init__(self)
+        self.platforms = OrderedDict()
+
         self.in_platforms = False
         self.in_new_platform = False
         self.finished_platforms = False
-        self.platforms = OrderedDict()
         self.category_name = ""
         self.category_index = "0"
 
     def handle_starttag(self, tag, attrs):
+        # Each new platform is its own <tr>
+        # The categories are listed as options in a menu
         if self.in_platforms and tag == 'tr':
             self.in_new_platform = True
             self.platform_name = ""
@@ -238,6 +248,8 @@ class SimfileHomepageHTMLParser(HTMLParser):
             self.category_index = value_attrs[0].strip()
 
     def handle_data(self, data):
+        # The word "Platform" shows up once at the start of
+        # the table with the information we actually care about
         if data == 'Platform':
             if self.in_platforms or self.finished_platforms:
                 raise RuntimeError("Found two Platform sections")
@@ -268,6 +280,8 @@ class SimfileHomepageHTMLParser(HTMLParser):
 
         if tag == 'option':
             if self.category_index != '0':
+                # Category 0 is the dummy label given for
+                # "Select Simfile Category"
                 self.category_name = self.category_name.strip()
                 self.platforms[self.platform_name][self.category_name] = self.category_index
             self.category_index = '0'
@@ -278,6 +292,10 @@ class SimfileHomepageHTMLParser(HTMLParser):
             self.finished_platforms = True
 
 class DownloadHTMLParser(HTMLParser):
+    """
+    Parses individual *lines*, not pages
+    Extracts a simfile link and download size from a line
+    """
     def __init__(self):
         HTMLParser.__init__(self)
         self.link = None
