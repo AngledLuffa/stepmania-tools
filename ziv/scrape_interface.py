@@ -5,10 +5,9 @@ file picker to choose the directory to save to
 have a text field offering with a prefix you can limit to
 add a text field for regex as well
 set defaults
+button that launches the download
 
 TODO:
-button that launches the download
-make regex filtering a thing...
 button that reloads the categories
 
 advanced:
@@ -145,7 +144,7 @@ class App(tk.Tk):
         elif self.filter_choice.get() == 2:
             regex = self.regex_entry.get()
         scrape_category.download_category(category_id, download_directory,
-                                          prefix=prefix)
+                                          prefix=prefix, regex=regex)
 
 
 category_map = scrape_category.cached_scrape_platforms()
