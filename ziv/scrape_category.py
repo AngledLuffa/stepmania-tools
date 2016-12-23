@@ -458,6 +458,18 @@ def filter_simfiles_prefix(simfiles, prefix):
     return filtered
 
 
+def filter_simfiles_regex(simfiles, regex):
+    """
+    Given a map of simfile objects, only keep those which match the regex
+    """
+    pattern = re.compile(regex)
+    filtered = {}
+    for x in simfiles.keys():
+        if pattern.match(simfiles[x].name):
+            filtered[x] = simfiles[x]
+    return filtered
+
+
 def simfile_already_downloaded(simfile, dest, check_zip=True, verbose=True):
     filename = os.path.join(dest, simfile.name)
     if os.path.exists(filename):
@@ -713,6 +725,8 @@ def build_argparser():
                            help="Which category number to download")
     argparser.add_argument("--prefix", default=CURRENT_WEEK,
                            help="Only download files with this prefix.  Default %s" % CURRENT_WEEK)
+    argparser.add_argument("--regex", default="",
+                           help="Only download files which match this regex.")
     argparser.add_argument("--dest", default="",
                            help="Where to put the simfiles.  Defaults to CWD")
 
@@ -784,6 +798,7 @@ def download_simfiles(titles, dest, tidy, use_logfile, extract):
 
 def download_category(category, dest,
                       prefix="",
+                      regex="",
                       since="",
                       use_logfile=True,
                       extract=True,
@@ -791,7 +806,10 @@ def download_category(category, dest,
     titles = get_category_from_ziv(category)
     if prefix:
         titles = filter_simfiles_prefix(titles, prefix)
-        print "%d simfiles matched pattern" % len(titles)
+        print "%d simfiles matched prefix" % len(titles)
+    if regex:
+        titles = filter_simfiles_regex(titles, regex)
+        print "%d simfiles matched regex" % len(titles)
     if since:
         titles = filter_simfiles_since(titles, since)
         print "%d simfiles matched date" % len(titles)
@@ -847,6 +865,7 @@ def main():
     download_category(category=args.category,
                       dest=args.dest,
                       prefix=args.prefix,
+                      regex=args.regex,
                       since=args.since,
                       use_logfile=args.use_logfile,
                       extract=args.extract,
