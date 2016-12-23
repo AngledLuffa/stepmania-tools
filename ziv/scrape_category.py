@@ -782,6 +782,31 @@ def download_simfiles(titles, dest, tidy, use_logfile, extract):
     return count
 
 
+def download_category(category, dest,
+                      prefix="",
+                      since="",
+                      use_logfile=True,
+                      extract=True,
+                      tidy=True):
+    titles = get_category_from_ziv(category)
+    if prefix:
+        titles = filter_simfiles_prefix(titles, prefix)
+        print "%d simfiles matched pattern" % len(titles)
+    if since:
+        titles = filter_simfiles_since(titles, since)
+        print "%d simfiles matched date" % len(titles)
+    if use_logfile:
+        titles = get_logged_titles(titles, dest)
+
+    count = download_simfiles(titles=titles,
+                              dest=dest,
+                              tidy=tidy,
+                              use_logfile=use_logfile,
+                              extract=extract)
+    print "Downloaded %d simfiles" % count
+
+
+
 def main():
     # If a file doesn't have an inner folder, such as 29303,
     # we extract the zip to the correct location.
@@ -819,19 +844,13 @@ def main():
     argparser = build_argparser()
     args = argparser.parse_args()
 
-    titles = get_category_from_ziv(args.category)
-    if args.prefix:
-        titles = filter_simfiles_prefix(titles, args.prefix)
-        print "%d simfiles matched pattern" % len(titles)
-    if args.since:
-        titles = filter_simfiles_since(titles, args.since)
-        print "%d simfiles matched date" % len(titles)
-    if args.use_logfile:
-        titles = get_logged_titles(titles, args.dest)
-
-    count = download_simfiles(titles, args.dest, args.tidy, 
-                              args.use_logfile, args.extract)
-    print "Downloaded %d simfiles" % count
+    download_category(category=args.category,
+                      dest=args.dest,
+                      prefix=args.prefix,
+                      since=args.since,
+                      use_logfile=args.use_logfile,
+                      extract=args.extract,
+                      tidy=args.tidy)
 
 if __name__ == "__main__":
     main()
