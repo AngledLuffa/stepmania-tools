@@ -50,7 +50,7 @@ import sys
 import urllib2
 import time
 import zipfile
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from HTMLParser import HTMLParser
 
 CURRENT_WEEK = "[Round B]"
@@ -222,7 +222,7 @@ class SimfileHomepageHTMLParser(HTMLParser):
         self.in_platforms = False
         self.in_new_platform = False
         self.finished_platforms = False
-        self.platforms = {}
+        self.platforms = OrderedDict()
         self.category_name = ""
         self.category_index = "0"
 
