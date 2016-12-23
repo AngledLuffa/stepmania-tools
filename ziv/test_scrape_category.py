@@ -71,9 +71,9 @@ class TestScrapeHomepage(unittest.TestCase):
 
         assert set(platforms.keys()) == expected_platforms
         assert len(platforms['Arcade']) == 32
-        arcade_category = platforms['Arcade'][0]
-        assert arcade_category[0] == "37"
-        assert arcade_category[1] == "Dance Dance Revolution (AC) (Japan)"
+        expected_category_name = "Dance Dance Revolution (AC) (Japan)"
+        assert expected_category_name in platforms['Arcade']
+        assert platforms['Arcade'][expected_category_name] == "37"
 
 if __name__ == '__main__':
     unittest.main()

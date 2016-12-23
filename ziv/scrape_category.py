@@ -264,12 +264,12 @@ class SimfileHomepageHTMLParser(HTMLParser):
             # us when its name is finished
             self.in_new_platform = False
             self.platform_name = self.platform_name.strip()
-            self.platforms[self.platform_name] = []
+            self.platforms[self.platform_name] = OrderedDict()
 
         if tag == 'option':
             if self.category_index != '0':
                 self.category_name = self.category_name.strip()
-                self.platforms[self.platform_name].append((self.category_index, self.category_name))
+                self.platforms[self.platform_name][self.category_name] = self.category_index
             self.category_index = '0'
             self.category_name = ""
 
