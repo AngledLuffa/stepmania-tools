@@ -4,11 +4,11 @@ have a menu listing the categories you can download (done)
 file picker to choose the directory to save to
 have a text field offering with a prefix you can limit to
 add a text field for regex as well
+set defaults
 
 TODO:
-set defaults
-make regex filtering a thing...
 button that launches the download
+make regex filtering a thing...
 button that reloads the categories
 
 advanced:
@@ -24,6 +24,10 @@ import tkFileDialog
 
 import scrape_category
 
+DEFAULT_PLATFORM="User"
+DEFAULT_CATEGORY="Z-I-v Simfile Shuffle 2016"
+DEFAULT_PREFIX="[Round B]"
+
 class App(tk.Tk):
 
     def __init__(self, master, category_map):
@@ -38,7 +42,7 @@ class App(tk.Tk):
         platform_list = list(category_map.keys())
         max_width = max(len(x) for x in platform_list)
         self.platform_var = tk.StringVar()
-        self.platform_var.set(platform_list[0])
+        self.platform_var.set(DEFAULT_PLATFORM)
         self.platform_drop = ttk.Combobox(self.frame,
                                           textvariable=self.platform_var,
                                           values=platform_list,
@@ -50,11 +54,14 @@ class App(tk.Tk):
         # Add a dropdown chooser for the category
         # When the platform changes, the list of available choices
         # will be updated
-        category_list = list(category_map[platform_list[0]].keys())
+        category_list = list(category_map[self.platform_var.get()].keys())
         max_width = max(max(len(x) for x in platform.keys())
                         for platform in category_map.values())
         self.category_var = tk.StringVar()
-        self.category_var.set(category_list[0])
+        if DEFAULT_CATEGORY in category_list:
+            self.category_var.set(DEFAULT_CATEGORY)
+        else:
+            self.category_var.set(category_list[0])
         self.category_drop = ttk.Combobox(self.frame,
                                           textvariable=self.category_var,
                                           values=category_list,
@@ -81,7 +88,8 @@ class App(tk.Tk):
 
         # Build a frame for the filters
         filter_frame = tk.Frame(self.frame)
-        self.filter_choice = tk.IntVar(0)
+        self.filter_choice = tk.IntVar()
+        self.filter_choice.set(1)
         radio_none = tk.Radiobutton(filter_frame, text="No filter",
                                     variable=self.filter_choice, value=0)
         radio_none.grid(row=0, column=0, sticky=tk.W)
@@ -91,6 +99,7 @@ class App(tk.Tk):
         radio_prefix.grid(row=1, column=0, sticky=tk.W)
         self.prefix_entry = tk.Entry(filter_frame)
         self.prefix_entry.grid(row=1, column=1)
+        self.prefix_entry.insert(0, DEFAULT_PREFIX)
 
         radio_regex = tk.Radiobutton(filter_frame, text="Regex",
                                      variable=self.filter_choice, value=2)
