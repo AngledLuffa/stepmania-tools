@@ -43,6 +43,7 @@ as they would require logging in.
 
 import argparse
 import codecs
+import cPickle as pickle
 import datetime
 import os
 import re
@@ -361,6 +362,39 @@ def scrape_platforms(url=ZIV_SIMFILE_CATEGORIES):
     parser = SimfileHomepageHTMLParser()
     parser.feed(content)
     return parser.platforms
+
+
+def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES):
+    """
+    Reads & writes the platform list to cached.pkl in the module directory.
+
+    If cached.pkl doesn't exist, it 
+    """
+    module_dir = os.path.split(__file__)[0]
+    cache_file = os.path.join(module_dir, "cached.pkl")
+
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file) as fin:
+                platform_map = pickle.load(fin)
+        except OSError:
+            print "Unable to load cached file, ignoring"
+        if isinstance(platform_map, OrderedDict):
+            return platform_map
+
+    platform_map = scrape_platforms(url)
+    # if anything goes wrong, make a best effort attempt to clean up a
+    # partially written cached.pkl
+    try:
+        with open(cache_file, "w") as fout:
+            pickle.dump(platform_map, fout)
+    except:
+        try:
+            os.remove(cache_file)
+        except OSError:
+            pass
+        raise
+    return platform_map
 
 
 ZIV_CATEGORY = "http://zenius-i-vanisher.com/v5.2/viewsimfilecategory.php?categoryid=%s"

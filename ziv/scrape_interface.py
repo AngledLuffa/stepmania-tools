@@ -57,9 +57,7 @@ class App(tk.Tk):
         print "%s: %s" % (self.platform_var.get(), self.category_var.get())
         # self.category_var.get(), self.platform_var.get()
 
-# TODO: this seems pretty fast, but we might want to cache the results
-# to be friendlier to the server
-category_map = scrape_category.scrape_platforms()
+category_map = scrape_category.cached_scrape_platforms()
 
 root = tk.Tk()
 
