@@ -107,13 +107,18 @@ class App(tk.Tk):
         self.regex_entry = tk.Entry(filter_frame)
         self.regex_entry.grid(row=2, column=1)
         filter_frame.pack(anchor="w")
-        
+
+        download_button = tk.Button(self.frame,
+                                    text="DOWNLOAD!",
+                                    command=self.download)
+        download_button.pack(anchor="w")
+
     def ask_directory(self):
         new_dir = tkFileDialog.askdirectory(parent=self.frame,
                                             title="Directory to save simfiles")
         if new_dir:
             self.directory_var.set(new_dir)
-        
+
     def choose_platform(self, event):
         platform = self.platform_var.get()
         print "Platform updated to %s" % platform
@@ -122,8 +127,26 @@ class App(tk.Tk):
         self.category_var.set(new_category_list[0])
 
     def choose_category(self, event):
-        print "%s: %s" % (self.platform_var.get(), self.category_var.get())
+        print "Category updated to %s: %s" % (self.platform_var.get(),
+                                              self.category_var.get())
         # self.category_var.get(), self.platform_var.get()
+
+    def download(self):
+        platform = self.platform_var.get()
+        category = self.category_var.get()
+        category_id = self.category_map[platform][category]
+        download_directory = self.directory_var.get()
+        print "Downloading %s to %s" % (category_id, download_directory)
+
+        prefix = ""
+        regex = ""
+        if self.filter_choice.get() == 1:
+            prefix = self.prefix_entry.get()
+        elif self.filter_choice.get() == 2:
+            regex = self.regex_entry.get()
+        scrape_category.download_category(category_id, download_directory,
+                                          prefix=prefix)
+
 
 category_map = scrape_category.cached_scrape_platforms()
 
