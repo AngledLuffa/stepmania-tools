@@ -1,9 +1,14 @@
 """
-Plan:
-have a menu listing the categories you can download
+Done:
+have a menu listing the categories you can download (done)
+
+TODO:
+file picker to choose the directory to save to
+  (remember this directory between executions?)
 have a text field offering with a prefix you can limit to
 add a text field for regex as well
 button that launches the download
+button that reloads the categories
 
 advanced: a progress bar
 """
