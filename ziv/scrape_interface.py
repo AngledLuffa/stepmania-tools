@@ -6,6 +6,7 @@ have a text field offering with a prefix you can limit to
 add a text field for regex as well
 
 TODO:
+set defaults
 make regex filtering a thing...
 button that launches the download
 button that reloads the categories
@@ -79,29 +80,23 @@ class App(tk.Tk):
         directory_frame.pack(anchor="w")
 
         # Build a frame for the filters
-        # TODO: maybe make filter_frame a grid to ensure that
-        # prefix_entry and regex_entry align
         filter_frame = tk.Frame(self.frame)
         self.filter_choice = tk.IntVar(0)
         radio_none = tk.Radiobutton(filter_frame, text="No filter",
                                     variable=self.filter_choice, value=0)
-        radio_none.pack(anchor="w")
+        radio_none.grid(row=0, column=0, sticky=tk.W)
 
-        prefix_frame = tk.Frame(filter_frame)
-        radio_prefix = tk.Radiobutton(prefix_frame, text="Prefix",
+        radio_prefix = tk.Radiobutton(filter_frame, text="Prefix",
                                       variable=self.filter_choice, value=1)
-        radio_prefix.pack(anchor="w", side=tk.LEFT)
-        self.prefix_entry = tk.Entry(prefix_frame)
-        self.prefix_entry.pack()
-        prefix_frame.pack()
+        radio_prefix.grid(row=1, column=0, sticky=tk.W)
+        self.prefix_entry = tk.Entry(filter_frame)
+        self.prefix_entry.grid(row=1, column=1)
 
-        regex_frame = tk.Frame(filter_frame)
-        radio_regex = tk.Radiobutton(regex_frame, text="Regex",
+        radio_regex = tk.Radiobutton(filter_frame, text="Regex",
                                      variable=self.filter_choice, value=2)
-        radio_regex.pack(anchor="w", side=tk.LEFT)
-        self.regex_entry = tk.Entry(regex_frame)
-        self.regex_entry.pack()
-        regex_frame.pack()
+        radio_regex.grid(row=2, column=0, sticky=tk.W)
+        self.regex_entry = tk.Entry(filter_frame)
+        self.regex_entry.grid(row=2, column=1)
         filter_frame.pack(anchor="w")
         
     def ask_directory(self):
