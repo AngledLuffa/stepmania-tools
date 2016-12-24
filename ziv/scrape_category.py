@@ -787,15 +787,13 @@ def download_simfiles(titles, dest, tidy, use_logfile, extract):
     dest : directory to send the simfiles (and logs)
     tidy : clean up zips if the simfiles are successfully extracted
     use_logfile : write a log to that directory
-
-    Written as a generator so that the GUI can use it interactively.
     """
+    count = 0
     for simfile in titles.values():
         if not simfile_already_downloaded(simfile, dest):
             download_simfile(simfile, dest, tidy, use_logfile, extract)
-            yield True
-        else:
-            yield False
+            count = count + 1
+    return count
 
 
 def get_filtered_titles_from_ziv(category, dest,
@@ -829,11 +827,11 @@ def download_category(category, dest,
                                           since=since,
                                           use_logfile=use_logfile)
 
-    count = sum(download_simfiles(titles=titles,
-                                  dest=dest,
-                                  tidy=tidy,
-                                  use_logfile=use_logfile,
-                                  extract=extract))
+    count = download_simfiles(titles=titles,
+                              dest=dest,
+                              tidy=tidy,
+                              use_logfile=use_logfile,
+                              extract=extract)
     print "Downloaded %d simfiles" % count
 
 
