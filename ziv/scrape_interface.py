@@ -165,7 +165,6 @@ class App(tk.Tk):
 
 
     def continue_download(self):
-        print self.progress["value"]
         download_directory = self.directory_var.get()
         simfile = self.download_titles[self.progress["value"]]
         if not scrape_category.simfile_already_downloaded(simfile, dest=download_directory):
