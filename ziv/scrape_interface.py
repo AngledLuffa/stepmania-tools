@@ -6,12 +6,14 @@ have a text field offering with a prefix you can limit to
 add a text field for regex as well
 set defaults
 button that launches the download
+a progress bar
 
 TODO:
 button that reloads the categories
 
 advanced:
-a progress bar
+Break downloads into chunks so there is more granularity for the UI
+redirect/copy stdout to a text window
 remember the download directory between executions
 """
 
@@ -112,6 +114,11 @@ class App(tk.Tk):
                                     command=self.download)
         download_button.pack(anchor="w")
 
+        self.progress = ttk.Progressbar(self.frame, orient="horizontal",
+                                        mode="determinate")
+        self.progress.pack()
+
+
     def ask_directory(self):
         new_dir = tkFileDialog.askdirectory(parent=self.frame,
                                             title="Directory to save simfiles")
@@ -143,8 +150,32 @@ class App(tk.Tk):
             prefix = self.prefix_entry.get()
         elif self.filter_choice.get() == 2:
             regex = self.regex_entry.get()
-        scrape_category.download_category(category_id, download_directory,
-                                          prefix=prefix, regex=regex)
+        titles = scrape_category.get_filtered_titles_from_ziv(category=category_id,
+                                                              dest=download_directory,
+                                                              prefix=prefix,
+                                                              regex=regex,
+                                                              since="",
+                                                              use_logfile=True)
+        print "Found %d matching simfiles" % len(titles)
+        self.progress["value"] = 0
+        self.progress["maximum"] = len(titles)
+        self.download_titles = list(titles.values())
+        # Use self.frame.after so that the UI can refresh
+        self.frame.after(1, self.continue_download)
+
+
+    def continue_download(self):
+        print self.progress["value"]
+        download_directory = self.directory_var.get()
+        simfile = self.download_titles[self.progress["value"]]
+        if not scrape_category.simfile_already_downloaded(simfile, dest=download_directory):
+            scrape_category.download_simfile(simfile, dest=download_directory,
+                                             tidy=True, use_logfile=True,
+                                             extract=True)
+        self.progress["value"] = self.progress["value"] + 1
+        if self.progress["value"] < len(self.download_titles):
+            # Use self.frame.after so that the UI can refresh
+            self.frame.after(1, self.continue_download)        
 
 
 category_map = scrape_category.cached_scrape_platforms()
