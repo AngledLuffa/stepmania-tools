@@ -787,22 +787,19 @@ def download_simfiles(titles, dest, tidy, use_logfile, extract):
     dest : directory to send the simfiles (and logs)
     tidy : clean up zips if the simfiles are successfully extracted
     use_logfile : write a log to that directory
+
+    Written as a generator so that the GUI can use it interactively.
     """
-    count = 0
     for simfile in titles.values():
         if not simfile_already_downloaded(simfile, dest):
-            count = count + 1
             download_simfile(simfile, dest, tidy, use_logfile, extract)
-    return count
+            yield True
+        else:
+            yield False
 
 
-def download_category(category, dest,
-                      prefix="",
-                      regex="",
-                      since="",
-                      use_logfile=True,
-                      extract=True,
-                      tidy=True):
+def get_filtered_titles_from_ziv(category, dest,
+                                 prefix, regex, since, use_logfile):
     titles = get_category_from_ziv(category)
     if prefix:
         titles = filter_simfiles_prefix(titles, prefix)
@@ -815,14 +812,29 @@ def download_category(category, dest,
         print "%d simfiles matched date" % len(titles)
     if use_logfile:
         titles = get_logged_titles(titles, dest)
+    return titles
 
-    count = download_simfiles(titles=titles,
-                              dest=dest,
-                              tidy=tidy,
-                              use_logfile=use_logfile,
-                              extract=extract)
+
+def download_category(category, dest,
+                      prefix="",
+                      regex="",
+                      since="",
+                      use_logfile=True,
+                      extract=True,
+                      tidy=True):
+    titles = get_filtered_titles_from_ziv(category=category,
+                                          dest=dest,
+                                          prefix=prefix,
+                                          regex=regex,
+                                          since=since,
+                                          use_logfile=use_logfile)
+
+    count = sum(download_simfiles(titles=titles,
+                                  dest=dest,
+                                  tidy=tidy,
+                                  use_logfile=use_logfile,
+                                  extract=extract))
     print "Downloaded %d simfiles" % count
-
 
 
 def main():
