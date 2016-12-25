@@ -1,4 +1,16 @@
 """
+This is a more friendly interface to the z-i-v scraper than the
+command line interface.
+
+By default, when it loads, it is set to download Round B of the
+2016 Simfile Shuffle.
+
+If you are reading this on github and looking for a way to download
+the script, look for the button labeled "Raw" to the upper right.
+Download to the directory where you want the simfiles downloaded.
+You will need Python installed.  www.python.org
+The program is compatible with 2.7.  Python 3 has not been tested.
+
 Done:
 have a menu listing the categories you can download (done)
 file picker to choose the directory to save to
@@ -11,11 +23,23 @@ a progress bar
 TODO:
 button that reloads the categories
 
-advanced:
+advanced TODO:
 Break downloads into chunks so there is more granularity for the UI
 redirect/copy stdout to a text window
 remember the download directory between executions
 """
+
+# Copyright 2016 by John Bauer
+# Distributed under the Apache License 2.0
+
+# TO THE EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS",
+# WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+# LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+# THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+# FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+# OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import os
 
