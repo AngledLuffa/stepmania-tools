@@ -25,11 +25,9 @@ add a text field for regex as well
 set defaults
 button that launches the download
 a progress bar
-
-TODO:
 button that reloads the categories
 
-advanced TODO:
+TODO:
 Break downloads into chunks so there is more granularity for the UI
 redirect/copy stdout to a text window
 remember the download directory between executions
@@ -145,12 +143,32 @@ class App(tk.Tk):
                                     command=self.download)
         download_button.pack(anchor="w")
 
-        progress_label = ttk.Label(self.frame, text="Download progress:")
+        progress_frame = tk.Frame(self.frame)
+        progress_label = ttk.Label(progress_frame, text="Download progress:")
         progress_label.pack(side=tk.LEFT)
-        self.progress = ttk.Progressbar(self.frame, orient="horizontal",
+        self.progress = ttk.Progressbar(progress_frame, orient="horizontal",
                                         mode="determinate")
         self.progress.pack(anchor="w", fill=tk.BOTH)
+        progress_frame.pack(fill=tk.BOTH)
 
+        platform_button = tk.Button(self.frame,
+                                    text="Reload platforms and categories",
+                                    command=self.reload_platforms)
+        platform_button.pack(anchor="w")
+
+    def reload_platforms(self):
+        category_map = scrape_category.cached_scrape_platforms(force=True)
+
+        new_platform_list = list(category_map.keys())
+        self.platform_drop['values'] = new_platform_list
+        platform = new_platform_list[0]
+        self.platform_var.set(platform)
+
+        new_category_list = list(category_map[platform].keys())
+        self.category_drop['values'] = new_category_list
+        self.category_var.set(new_category_list[0])
+
+        self.category_map = category_map
 
     def ask_directory(self):
         new_dir = tkFileDialog.askdirectory(parent=self.frame,
@@ -161,7 +179,7 @@ class App(tk.Tk):
     def choose_platform(self, event):
         platform = self.platform_var.get()
         print "Platform updated to %s" % platform
-        new_category_list = list(category_map[platform].keys())
+        new_category_list = list(self.category_map[platform].keys())
         self.category_drop['values'] = new_category_list
         self.category_var.set(new_category_list[0])
 
@@ -210,12 +228,16 @@ class App(tk.Tk):
             self.frame.after(1, self.continue_download)        
 
 
-category_map = scrape_category.cached_scrape_platforms()
+def main():
+    category_map = scrape_category.cached_scrape_platforms()
 
-root = tk.Tk()
+    root = tk.Tk()
 
-app = App(root, category_map)
+    app = App(root, category_map)
 
-root.mainloop()
+    root.mainloop()
 
-# root.destroy() # optional; see description below
+    # root.destroy() # optional; see description below
+
+if __name__ == "__main__":
+    main()

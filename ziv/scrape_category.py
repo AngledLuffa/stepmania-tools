@@ -364,7 +364,7 @@ def scrape_platforms(url=ZIV_SIMFILE_CATEGORIES):
     return parser.platforms
 
 
-def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES):
+def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES, force=False):
     """
     Reads & writes the platform list to cached.pkl in the module directory.
 
@@ -374,13 +374,16 @@ def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES):
     cache_file = os.path.join(module_dir, "cached.pkl")
 
     if os.path.exists(cache_file):
-        try:
-            with open(cache_file) as fin:
-                platform_map = pickle.load(fin)
-        except OSError:
-            print "Unable to load cached file, ignoring"
-        if isinstance(platform_map, OrderedDict):
-            return platform_map
+        if force:
+            os.remove(cache_file)
+        else:
+            try:
+                with open(cache_file) as fin:
+                    platform_map = pickle.load(fin)
+            except OSError:
+                print "Unable to load cached file, ignoring"
+            if isinstance(platform_map, OrderedDict):
+                return platform_map
 
     platform_map = scrape_platforms(url)
     # if anything goes wrong, make a best effort attempt to clean up a
