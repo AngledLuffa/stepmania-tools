@@ -11,6 +11,12 @@ Download to the directory where you want the simfiles downloaded.
 You will need Python installed.  www.python.org
 The program is compatible with 2.7.  Python 3 has not been tested.
 
+There are three other files which are also needed, if downloading
+files individually from github.  You can find them by clicking on the
+"ziv" breadcrumb where it says step-mani-tools/ziv/scrape_interface.py
+The necessary files are "cached.pkl", "crape_category.py", and
+"__init__.py"
+
 Done:
 have a menu listing the categories you can download (done)
 file picker to choose the directory to save to
@@ -27,6 +33,7 @@ advanced TODO:
 Break downloads into chunks so there is more granularity for the UI
 redirect/copy stdout to a text window
 remember the download directory between executions
+
 """
 
 # Copyright 2016 by John Bauer
