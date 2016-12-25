@@ -32,6 +32,7 @@ TODO:
 Break downloads into chunks so there is more granularity for the UI
 redirect/copy stdout to a text window
 remember the download directory between executions
+recover from network errors
 """
 
 # Copyright 2016 by John Bauer
