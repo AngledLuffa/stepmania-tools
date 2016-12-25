@@ -805,12 +805,17 @@ def get_filtered_titles_from_ziv(category, dest,
     if prefix:
         titles = filter_simfiles_prefix(titles, prefix)
         print "%d simfiles matched prefix" % len(titles)
+
     if regex:
         titles = filter_simfiles_regex(titles, regex)
         print "%d simfiles matched regex" % len(titles)
+
+    if since:
+        since = since.strip()
     if since:
         titles = filter_simfiles_since(titles, since)
         print "%d simfiles matched date" % len(titles)
+
     if use_logfile:
         titles = get_logged_titles(titles, dest)
     return titles
