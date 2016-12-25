@@ -26,6 +26,7 @@ set defaults
 button that launches the download
 a progress bar
 button that reloads the categories
+filter by date
 
 TODO:
 Break downloads into chunks so there is more granularity for the UI
@@ -116,6 +117,10 @@ class App(tk.Tk):
         directory_frame.pack(anchor="w")
 
         # Build a frame for the filters
+        # The inner frame will use grid() to make sure the columns
+        # line up nicely
+        # The left side will have a radio: None, Prefix, Regex
+        # The right side will have text entries for Prefix and Regex
         filter_frame = tk.Frame(self.frame)
         self.filter_choice = tk.IntVar()
         self.filter_choice.set(1)
@@ -135,13 +140,20 @@ class App(tk.Tk):
         radio_regex.grid(row=2, column=0, sticky=tk.W)
         self.regex_entry = tk.Entry(filter_frame)
         self.regex_entry.grid(row=2, column=1)
-        filter_frame.pack(anchor="w")
 
+        since_label = ttk.Label(filter_frame, text="Age filter:")
+        since_label.grid(row=3, column=0, sticky=tk.W)
+        self.since_entry = tk.Entry(filter_frame)
+        self.since_entry.grid(row=3, column=1)
+
+        filter_frame.pack(anchor="w")
+        
         download_button = tk.Button(self.frame,
                                     text="DOWNLOAD!",
                                     command=self.download)
         download_button.pack(anchor="w")
 
+        # A small block showing current progress
         progress_frame = tk.Frame(self.frame)
         progress_label = ttk.Label(progress_frame, text="Download progress:")
         progress_label.pack(side=tk.LEFT)
@@ -200,11 +212,12 @@ class App(tk.Tk):
             prefix = self.prefix_entry.get()
         elif self.filter_choice.get() == 2:
             regex = self.regex_entry.get()
+        since = self.since_entry.get()
         titles = scrape_category.get_filtered_titles_from_ziv(category=category_id,
                                                               dest=download_directory,
                                                               prefix=prefix,
                                                               regex=regex,
-                                                              since="",
+                                                              since=since,
                                                               use_logfile=True)
         print "Found %d matching simfiles" % len(titles)
         self.progress["value"] = 0
