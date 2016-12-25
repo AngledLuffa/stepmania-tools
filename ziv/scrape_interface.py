@@ -31,7 +31,6 @@ TODO:
 Break downloads into chunks so there is more granularity for the UI
 redirect/copy stdout to a text window
 remember the download directory between executions
-
 """
 
 # Copyright 2016 by John Bauer
@@ -233,11 +232,9 @@ def main():
 
     root = tk.Tk()
 
-    app = App(root, category_map)
+    _ = App(root, category_map)
 
     root.mainloop()
-
-    # root.destroy() # optional; see description below
 
 if __name__ == "__main__":
     main()
