@@ -83,8 +83,8 @@ class App(tk.Tk):
         directory_chooser.pack(side=tk.LEFT)
         self.directory_var = tk.StringVar()
         self.directory_var.set(os.getcwd())
-        label = ttk.Label(directory_frame, textvariable=self.directory_var)
-        label.pack(side=tk.LEFT)
+        directory_label = ttk.Label(directory_frame, textvariable=self.directory_var)
+        directory_label.pack(side=tk.LEFT)
         directory_frame.pack(anchor="w")
 
         # Build a frame for the filters
@@ -114,9 +114,11 @@ class App(tk.Tk):
                                     command=self.download)
         download_button.pack(anchor="w")
 
+        progress_label = ttk.Label(self.frame, text="Download progress:")
+        progress_label.pack(side=tk.LEFT)
         self.progress = ttk.Progressbar(self.frame, orient="horizontal",
                                         mode="determinate")
-        self.progress.pack()
+        self.progress.pack(anchor="w", fill=tk.BOTH)
 
 
     def ask_directory(self):
