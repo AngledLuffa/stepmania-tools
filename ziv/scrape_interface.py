@@ -14,7 +14,7 @@ The program is compatible with 2.7.  Python 3 has not been tested.
 There are three other files which are also needed, if downloading
 files individually from github.  You can find them by clicking on the
 "ziv" breadcrumb where it says step-mani-tools/ziv/scrape_interface.py
-The necessary files are "cached.pkl", "crape_category.py", and
+The necessary files are "cached.pkl", "scrape_category.py", and
 "__init__.py"
 
 Done:
