@@ -380,7 +380,7 @@ def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES, force=False):
             try:
                 with open(cache_file) as fin:
                     platform_map = pickle.load(fin)
-            except OSError:
+            except (OSError, IOError):
                 print "Unable to load cached file, ignoring"
             if isinstance(platform_map, OrderedDict):
                 return platform_map
@@ -394,7 +394,7 @@ def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES, force=False):
     except:
         try:
             os.remove(cache_file)
-        except OSError:
+        except (OSError, IOError):
             pass
         raise
     return platform_map
@@ -655,7 +655,7 @@ def extract_simfile(simfile, dest):
             extracted_directory = get_directory(simzip)
             extracted_directory = sanitize_name(extracted_directory)
             extract_fixing_spaces(simzip, dest, extracted_directory)
-    except (zipfile.BadZipfile, IOError, WindowsError) as e:
+    except (zipfile.BadZipfile, IOError, WindowsError):
         print "Unable to extract %s" % filename
         if (extracted_directory is not None and
             os.path.exists(extracted_directory)):
