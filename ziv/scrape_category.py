@@ -368,7 +368,7 @@ def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES, force=False):
     """
     Reads & writes the platform list to cached.pkl in the module directory.
 
-    If cached.pkl doesn't exist, it 
+    If cached.pkl doesn't exist, it gets created here.
     """
     module_dir = os.path.split(__file__)[0]
     cache_file = os.path.join(module_dir, "cached.pkl")
