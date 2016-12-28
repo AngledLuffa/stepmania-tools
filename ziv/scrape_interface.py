@@ -27,11 +27,11 @@ button that launches the download
 a progress bar
 button that reloads the categories
 filter by date
+remember the download directory between executions
 
 TODO:
 Break downloads into chunks so there is more granularity for the UI
 redirect/copy stdout to a text window
-remember the download directory between executions
 recover from network errors
 """
 
@@ -48,6 +48,7 @@ recover from network errors
 # OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import os
+import cPickle as pickle
 
 import Tkinter as tk
 import ttk
@@ -58,6 +59,58 @@ import scrape_category
 DEFAULT_PLATFORM="User"
 DEFAULT_CATEGORY="Z-I-v Simfile Shuffle 2016"
 DEFAULT_PREFIX="[Round B]"
+
+
+def config_path():
+    """
+    Choose a suitable path for the config file.
+
+    This works on max / linux.  TODO: check on Windows to see how
+    easy it is to put something in the Application directory.
+
+    There are modules that do this, such as appdirs, but I don't want
+    random user X to have to learn how to pip install things just to
+    use the script.
+    """
+    user_config = os.path.expanduser("~/.ziv_scraper")
+    if os.path.exists(user_config):
+        return user_config
+    else:
+        try:
+            os.mkdir(user_config)
+            return user_config
+        except OSError:
+            pass
+    return "."
+
+
+def config_file():
+    return os.path.join(config_path(), "config.txt")
+
+
+def load_config():
+    try:
+        with open(config_file()) as fin:
+            config = pickle.load(fin)
+    except (OSError, IOError):
+        config = {}
+    return config.get("initial_path", None)
+
+
+def save_config(initial_path):
+    config = {"initial_path": initial_path}
+
+    try:
+        with open(config_file(), "w") as fout:
+            pickle.dump(config, fout)
+    except:
+        try:
+            os.remove(config_file())
+        except (OSError, IOError):
+            pass
+        raise
+
+
 
 class App(tk.Tk):
 
@@ -112,7 +165,10 @@ class App(tk.Tk):
                                       command=self.ask_directory)
         directory_chooser.pack(side=tk.LEFT)
         self.directory_var = tk.StringVar()
-        self.directory_var.set(os.getcwd())
+        current_save_dir = load_config()
+        if not current_save_dir:
+            current_save_dir = os.getcwd()
+        self.directory_var.set(current_save_dir)
         directory_label = ttk.Label(directory_frame, textvariable=self.directory_var)
         directory_label.pack(side=tk.LEFT)
         directory_frame.pack(anchor="w")
@@ -187,6 +243,7 @@ class App(tk.Tk):
                                             title="Directory to save simfiles")
         if new_dir:
             self.directory_var.set(new_dir)
+            save_config(initial_path=new_dir)
 
     def choose_platform(self, event):
         platform = self.platform_var.get()
