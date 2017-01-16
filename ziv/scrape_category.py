@@ -566,6 +566,9 @@ def valid_directory_structure(simzip):
 
 
 def filter_mac_files(names):
+    """
+    Get rid of random system files from zips build on macs
+    """
     return [x for x in names
             if not x.startswith("__MAC") and x.find("/__MAC") < 0]
 

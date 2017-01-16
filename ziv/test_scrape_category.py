@@ -23,6 +23,10 @@ EXPECTED_FILTERED = {
     '26969': scrape_category.Simfile(simfileid='26969', name='Dai Yan Ren', age=1451520)
 }
 
+EXPECTED_REGEX = {
+    '27069': scrape_category.Simfile(simfileid='27069', name='Cruise', age=26784000)
+}
+
 EXPECTED_FIVE_MINUTES = {
     '27015': scrape_category.Simfile(simfileid='27015', name='Ai Qing Fu Xing', age=60)
 }
@@ -88,11 +92,22 @@ class TestUtilityMethods(unittest.TestCase):
         filtered = scrape_category.filter_simfiles_prefix(EXPECTED_SIMFILES, "D")
         compare_simfile_records(filtered, EXPECTED_FILTERED)
 
+    def test_filter_regex(self):
+        filtered = scrape_category.filter_simfiles_regex(EXPECTED_SIMFILES, ".*rui.*")
+        compare_simfile_records(filtered, EXPECTED_REGEX)
+        
     def test_filter_since(self):
         filtered = scrape_category.filter_simfiles_since(EXPECTED_SIMFILES, "5 minutes ago")
         compare_simfile_records(filtered, EXPECTED_FIVE_MINUTES)
         filtered = scrape_category.filter_simfiles_since(EXPECTED_SIMFILES, "1 week ago")
         compare_simfile_records(filtered, EXPECTED_ONE_WEEK)
+
+    def test_filter_mac_files(self):
+        names = ["foo", "bar", "__MAC_blah", "foo/__MAC_bar"]
+        expected_names = ["foo", "bar"]
+        result = scrape_category.filter_mac_files(names)
+        assert result == expected_names
+
 
 class TestScrapeHomepage(unittest.TestCase):
     PLATFORMS_URL = "file:///" + MODULE_DIR + "/test/simfile_homepage.html"
@@ -143,6 +158,66 @@ class TestScrapeHomepage(unittest.TestCase):
             assert force_time > original_time
         finally:
             shutil.rmtree(cache_dir)
+
+
+class TestAlreadyDownloaded(unittest.TestCase):
+    def touch(self, dest, filename):
+        with open(os.path.join(dest, filename), "w"):
+            pass
+
+    def setUp(self):
+        self.dest = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dest)
+
+    def test_already_downloaded(self):
+        simfile = scrape_category.Simfile(simfileid='27069',
+                                          name='Cruise',
+                                          age=26784000)
+        self.touch(self.dest, 'Cruise')
+        assert scrape_category.simfile_already_downloaded(simfile, self.dest)
+        
+    def test_already_downloaded_sanitize(self):
+        simfile = scrape_category.Simfile(simfileid='27069',
+                                          name='Cruise.',
+                                          age=26784000)
+        self.touch(self.dest, 'Cruise')
+        assert scrape_category.simfile_already_downloaded(simfile, self.dest)
+
+    def test_already_downloaded_zipfile(self):
+        simfile = scrape_category.Simfile(simfileid='27069',
+                                          name='Cruise.',
+                                          age=26784000)
+        self.touch(self.dest, 'sim27069.zip')
+        assert scrape_category.simfile_already_downloaded(simfile, self.dest)
+
+    def test_not_downloaded(self):
+        simfile = scrape_category.Simfile(simfileid='27069',
+                                          name='Cruise.',
+                                          age=26784000)
+        assert not scrape_category.simfile_already_downloaded(simfile, self.dest)
+
+# TODO test:
+# these require fake zipfiles
+#   valid_directory_structure
+#   flat_directory_structure
+#   get_directory
+#   extract_fixing_spaces
+#   extract_simfile
+#   get_simfile_from_ziv (add a fake .zip to our test directory, "download" it)
+# sanitize_name
+# unlink_zip
+# log files:
+#   get_log_filename
+#   renaming_message
+#   log_renaming_message
+#   get_logged_titles - this may need renaming anyway
+# the whole thing:
+#   download_simfile - would require passing in local URLs
+#   download_simfiles
+#   download_category
+# get_filtered_titles_from_ziv
 
 
 if __name__ == '__main__':
