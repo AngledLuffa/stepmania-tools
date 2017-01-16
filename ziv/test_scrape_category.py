@@ -49,6 +49,23 @@ class TestScrapeCategory(unittest.TestCase):
         compare_simfile_records(simfiles, EXPECTED_SIMFILES)
 
 class TestUtilityMethods(unittest.TestCase):
+    def test_parse_age(self):
+        expected_results = [
+            ("1 hour ago", 3600),
+            ("10 seconds ago", 10),
+            ("2 days ago", 172800),
+            ("1 week ago", 604800)
+        ]
+        for text, age in expected_results:
+            assert age == scrape_category.parse_age(text)
+
+    def test_get_content(self):
+        content_url = "file:///" + MODULE_DIR + "/test/small_content.txt"
+        content = scrape_category.get_content(content_url, split=True)
+        assert content == ["foo", "bar"]
+        content = scrape_category.get_content(content_url, split=False)
+        assert content == "foo\nbar"
+    
     def test_filter_prefix(self):
         filtered = scrape_category.filter_simfiles_prefix(EXPECTED_SIMFILES, "D")
         compare_simfile_records(filtered, EXPECTED_FILTERED)
