@@ -65,8 +65,7 @@ def config_path():
     """
     Choose a suitable path for the config file.
 
-    This works on max / linux.  TODO: check on Windows to see how
-    easy it is to put something in the Application directory.
+    This works on mac & windows.
 
     There are modules that do this, such as appdirs, but I don't want
     random user X to have to learn how to pip install things just to
@@ -80,8 +79,8 @@ def config_path():
             os.mkdir(user_config)
             return user_config
         except OSError:
-            pass
-    return "."
+            print("Wanted to make a config directory in %s but unable to" % user_config)
+            raise
 
 
 def config_file():
