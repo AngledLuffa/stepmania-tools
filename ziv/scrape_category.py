@@ -99,7 +99,7 @@ def parse_update_threshold(since):
 def filter_simfiles_since(simfiles, since):
     now = time.time()
     last_update_threshold = parse_update_threshold(since)
-    print "Only downloading files more recent than %s" % datetime.datetime.fromtimestamp(last_update_threshold)
+    print("Only downloading files more recent than %s" % datetime.datetime.fromtimestamp(last_update_threshold))
     filtered = {}
     for x in simfiles:
         if now - simfiles[x].age > last_update_threshold:
@@ -355,8 +355,8 @@ def scrape_platforms(url=ZIV_SIMFILE_CATEGORIES):
 
     The url can be set to read from z-i-v or from a unit test file.
     """
-    print "Downloading simfiles home page from:"
-    print url
+    print("Downloading simfiles home page from:")
+    print(url)
 
     content = get_content(url, split=False)
     parser = SimfileHomepageHTMLParser()
@@ -381,7 +381,7 @@ def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES, force=False):
                 with open(cache_file) as fin:
                     platform_map = pickle.load(fin)
             except (OSError, IOError):
-                print "Unable to load cached file, ignoring"
+                print("Unable to load cached file, ignoring")
             if isinstance(platform_map, OrderedDict):
                 return platform_map
 
@@ -413,15 +413,15 @@ def get_category_from_ziv(category, url=ZIV_CATEGORY):
     """
     url = url % category
 
-    print "Downloading category from:"
-    print url
+    print("Downloading category from:")
+    print(url)
 
     content = get_content(url, split=False)
     parser = CategoryHTMLParser()
     parser.feed(content)
     results = parser.simfiles
 
-    print "Found %d simfiles" % len(results)
+    print("Found %d simfiles" % len(results))
 
     return results
 
@@ -477,20 +477,20 @@ def simfile_already_downloaded(simfile, dest, check_zip=True, verbose=True):
     filename = os.path.join(dest, simfile.name)
     if os.path.exists(filename):
         if verbose:
-            print 'Directory already exists: "%s"' % filename
+            print('Directory already exists: "%s"' % filename)
         return True
 
     filename = os.path.join(dest, sanitize_name(simfile.name))
     if os.path.exists(filename):
         if verbose:
-            print 'Directory already exists: "%s"' % filename
+            print('Directory already exists: "%s"' % filename)
         return True
 
     if check_zip:
         filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
         if os.path.exists(filename):
             if verbose:
-                print "Zip file already exists: %s" % filename
+                print("Zip file already exists: %s" % filename)
             return True
 
     return False
@@ -646,7 +646,7 @@ def extract_simfile(simfile, dest):
             extracted_directory = sanitize_name(simfile.name)
             extract_fixing_spaces(simzip, dest, extracted_directory)
         elif not valid_directory_structure(simzip):
-            print "Invalid directory structure in %s" % filename
+            print("Invalid directory structure in %s" % filename)
         else:
             # This will check for spaces at the start or end of the
             # filenames, which are not okay in Windows
@@ -656,10 +656,10 @@ def extract_simfile(simfile, dest):
             extracted_directory = sanitize_name(extracted_directory)
             extract_fixing_spaces(simzip, dest, extracted_directory)
     except (zipfile.BadZipfile, IOError, WindowsError):
-        print "Unable to extract %s" % filename
+        print("Unable to extract %s" % filename)
         if (extracted_directory is not None and
             os.path.exists(extracted_directory)):
-            print "Warning: there may be a partial download in %s" % extracted_directory
+            print("Warning: there may be a partial download in %s" % extracted_directory)
             # return None so the caller doesn't clean up the .zip
             extracted_directory = None
     if simzip is not None:
@@ -670,7 +670,7 @@ def extract_simfile(simfile, dest):
 
 def get_simfile_from_ziv(simfile, link, dest):
     filename = os.path.join(dest, "sim%s.zip" % simfile.simfileid)
-    print 'Downloading "%s" from %s to %s' % (simfile.name, link, filename)
+    print('Downloading "%s" from %s to %s' % (simfile.name, link, filename))
     content = get_content(link, split=False)
     fout = open(filename, "wb")
     fout.write(content)
@@ -804,17 +804,17 @@ def get_filtered_titles_from_ziv(category, dest,
     titles = get_category_from_ziv(category)
     if prefix:
         titles = filter_simfiles_prefix(titles, prefix)
-        print "%d simfiles matched prefix" % len(titles)
+        print("%d simfiles matched prefix" % len(titles))
 
     if regex:
         titles = filter_simfiles_regex(titles, regex)
-        print "%d simfiles matched regex" % len(titles)
+        print("%d simfiles matched regex" % len(titles))
 
     if since:
         since = since.strip()
     if since:
         titles = filter_simfiles_since(titles, since)
-        print "%d simfiles matched date" % len(titles)
+        print("%d simfiles matched date" % len(titles))
 
     if use_logfile:
         titles = get_logged_titles(titles, dest)
@@ -840,7 +840,7 @@ def download_category(category, dest,
                               tidy=tidy,
                               use_logfile=use_logfile,
                               extract=extract)
-    print "Downloaded %d simfiles" % count
+    print("Downloaded %d simfiles" % count)
 
 
 def main():

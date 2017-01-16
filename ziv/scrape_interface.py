@@ -246,14 +246,14 @@ class App(tk.Tk):
 
     def choose_platform(self, event):
         platform = self.platform_var.get()
-        print "Platform updated to %s" % platform
+        print("Platform updated to %s" % platform)
         new_category_list = list(self.category_map[platform].keys())
         self.category_drop['values'] = new_category_list
         self.category_var.set(new_category_list[0])
 
     def choose_category(self, event):
-        print "Category updated to %s: %s" % (self.platform_var.get(),
-                                              self.category_var.get())
+        print("Category updated to %s: %s" % (self.platform_var.get(),
+                                              self.category_var.get()))
         # self.category_var.get(), self.platform_var.get()
 
     def download(self):
@@ -261,7 +261,7 @@ class App(tk.Tk):
         category = self.category_var.get()
         category_id = self.category_map[platform][category]
         download_directory = self.directory_var.get()
-        print "Downloading %s to %s" % (category_id, download_directory)
+        print("Downloading %s to %s" % (category_id, download_directory))
 
         prefix = ""
         regex = ""
@@ -276,7 +276,7 @@ class App(tk.Tk):
                                                               regex=regex,
                                                               since=since,
                                                               use_logfile=True)
-        print "Found %d matching simfiles" % len(titles)
+        print("Found %d matching simfiles" % len(titles))
         self.progress["value"] = 0
         self.progress["maximum"] = len(titles)
         self.download_titles = list(titles.values())
