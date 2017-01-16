@@ -52,6 +52,14 @@ class TestScrapeCategory(unittest.TestCase):
         simfiles = scrape_category.get_category_from_ziv("category_test", self.CATEGORY_URL)
         compare_simfile_records(simfiles, EXPECTED_SIMFILES)
 
+class TestFileLinks(unittest.TestCase):
+    SIMFILE_URL = "file:///" + MODULE_DIR + "/test/simfile_%s.html"
+
+    def test_file_link(self):
+        link = scrape_category.get_file_link_from_ziv("29051", url=self.SIMFILE_URL)
+        expected_link = "http://zenius-i-vanisher.com/v5.2/download.php?type=ddrsimfilecustom&simfileid=29051"
+        assert link == expected_link
+    
 class TestUtilityMethods(unittest.TestCase):
     def test_parse_age(self):
         expected_results = [

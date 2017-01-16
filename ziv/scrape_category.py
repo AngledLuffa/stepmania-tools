@@ -428,13 +428,16 @@ def get_category_from_ziv(category, url=ZIV_CATEGORY):
     return results
 
 
-def get_file_link_from_ziv(simfileid):
+ZIV_SIMFILE = "http://zenius-i-vanisher.com/v5.2/viewsimfile.php?simfileid=%s"
+
+def get_file_link_from_ziv(simfileid, url=ZIV_SIMFILE):
     """
     Gets the page for this particular simfile, extracts the link to
     the largest zip file on that link
-    """
-    url = "http://zenius-i-vanisher.com/v5.2/viewsimfile.php?simfileid=%s" % simfileid
 
+    TODO: If we enable logging in, this would need to handle those links
+    """
+    url = url % simfileid
     content = get_content(url)
     zip_lines = [x for x in content if "ZIP" in x]
 
@@ -873,6 +876,8 @@ def main():
     #   update newer ones
     # Search all directories for the files, in case you are
     #   rearranging the files after downloading?
+    # Allow logging in
+    #   - get_file_link_from_ziv would need updating
     #
     # TODO other stuff:
     # write unit tests
