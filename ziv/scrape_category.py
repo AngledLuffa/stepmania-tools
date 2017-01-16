@@ -296,13 +296,27 @@ class DownloadHTMLParser(HTMLParser):
     """
     Parses individual *lines*, not pages
     Extracts a simfile link and download size from a line
+
+    The expectation is that the format will look like
+
+    <tr><td class="border">ZIP</td><td class="border"><a href="download.php?type=ddrsimfile&amp;simfileid=29051">ZIP</a> (63.29MB) <span style="color: gray">6.1 months ago</span></td></tr>
+
+    Possibly there will be some links for owner commands in the first
+    <td>, such as a delete command.
     """
     def __init__(self):
         HTMLParser.__init__(self)
         self.link = None
         self.size = None
 
+        self._saw_end_td = False
+
     def handle_starttag(self, tag, attrs):
+        if not self._saw_end_td:
+            # The first <td> may contain owner commands,
+            # which we want to ignore
+            return
+        
         if tag != "a":
             return
 
@@ -313,9 +327,16 @@ class DownloadHTMLParser(HTMLParser):
             if attr[0] == "href":
                 self.link = attr[1]
 
+        if "download.php" not in self.link:
+            raise RuntimeError("Found a link that points to an unexpected URL: {}".format(self.link))
+                
         if self.link is None:
             raise RuntimeError("Found a link with no href: {}".format(attrs))
 
+    def handle_endtag(self, tag):
+        if tag == 'td':
+            self._saw_end_td = True
+        
     def handle_data(self, data):
         if "MB" not in data:
             return
@@ -434,8 +455,6 @@ def get_file_link_from_ziv(simfileid, url=ZIV_SIMFILE):
     """
     Gets the page for this particular simfile, extracts the link to
     the largest zip file on that link
-
-    TODO: If we enable logging in, this would need to handle those links
     """
     url = url % simfileid
     content = get_content(url)
@@ -877,7 +896,6 @@ def main():
     # Search all directories for the files, in case you are
     #   rearranging the files after downloading?
     # Allow logging in
-    #   - get_file_link_from_ziv would need updating
     #
     # TODO other stuff:
     # write unit tests

@@ -54,12 +54,18 @@ class TestScrapeCategory(unittest.TestCase):
 
 class TestFileLinks(unittest.TestCase):
     SIMFILE_URL = "file:///" + MODULE_DIR + "/test/simfile_%s.html"
+    SIMFILE_OWNER_URL = "file:///" + MODULE_DIR + "/test/simfile_owner_%s.html"
 
     def test_file_link(self):
         link = scrape_category.get_file_link_from_ziv("29051", url=self.SIMFILE_URL)
         expected_link = "http://zenius-i-vanisher.com/v5.2/download.php?type=ddrsimfilecustom&simfileid=29051"
         assert link == expected_link
-    
+
+    def test_file_link_as_owner(self):
+        link = scrape_category.get_file_link_from_ziv("29051", url=self.SIMFILE_OWNER_URL)
+        expected_link = "http://zenius-i-vanisher.com/v5.2/download.php?type=ddrsimfilecustom&simfileid=29051"
+        assert link == expected_link
+
 class TestUtilityMethods(unittest.TestCase):
     def test_parse_age(self):
         expected_results = [
