@@ -1,4 +1,8 @@
+import glob
 import os
+import shutil
+import tempfile
+import time
 import unittest
 
 import scrape_category
@@ -91,6 +95,41 @@ class TestScrapeHomepage(unittest.TestCase):
         expected_category_name = "Dance Dance Revolution (AC) (Japan)"
         assert expected_category_name in platforms['Arcade']
         assert platforms['Arcade'][expected_category_name] == "37"
+
+    def test_cached_platforms(self):
+        cache_dir = tempfile.mkdtemp()
+        platforms = scrape_category.scrape_platforms(self.PLATFORMS_URL)
+        try:
+            # test the case of needing to create the cache
+            assert len(glob.glob("%s/*" % cache_dir)) == 0
+            cached_platforms = scrape_category.cached_scrape_platforms(self.PLATFORMS_URL, cache_dir=cache_dir)
+            assert platforms == cached_platforms
+            cache_files = glob.glob("%s/*" % cache_dir)
+            assert len(cache_files) == 1
+            cache_file = cache_files[0]
+
+            original_time = os.path.getmtime(cache_file)
+
+            # test using the cache
+            # the file should not be changed
+            time.sleep(0.02)
+            cached_platforms = scrape_category.cached_scrape_platforms(self.PLATFORMS_URL, cache_dir=cache_dir)
+            assert platforms == cached_platforms
+            assert len(glob.glob("%s/*" % cache_dir)) == 1
+            cache_time = os.path.getmtime(cache_file)
+            assert original_time == cache_time
+
+            # test the "force" option - check that the new mod time is
+            # later than the previous mod time
+            time.sleep(0.02)
+            cached_platforms = scrape_category.cached_scrape_platforms(self.PLATFORMS_URL, force=True, cache_dir=cache_dir)
+            assert platforms == cached_platforms
+            assert len(glob.glob("%s/*" % cache_dir)) == 1
+            force_time = os.path.getmtime(cache_file)
+            assert force_time > original_time
+        finally:
+            shutil.rmtree(cache_dir)
+
 
 if __name__ == '__main__':
     unittest.main()

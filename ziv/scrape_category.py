@@ -364,14 +364,16 @@ def scrape_platforms(url=ZIV_SIMFILE_CATEGORIES):
     return parser.platforms
 
 
-def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES, force=False):
+def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES,
+                            force=False, cache_dir=None):
     """
     Reads & writes the platform list to cached.pkl in the module directory.
 
     If cached.pkl doesn't exist, it gets created here.
     """
-    module_dir = os.path.split(__file__)[0]
-    cache_file = os.path.join(module_dir, "cached.pkl")
+    if cache_dir is None:
+        cache_dir = os.path.split(__file__)[0]
+    cache_file = os.path.join(cache_dir, "cached.pkl")
 
     if os.path.exists(cache_file):
         if force:
