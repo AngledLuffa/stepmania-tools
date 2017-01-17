@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import time
 import unittest
+import zipfile
 
 import scrape_category
 
@@ -198,11 +199,62 @@ class TestAlreadyDownloaded(unittest.TestCase):
                                           age=26784000)
         assert not scrape_category.simfile_already_downloaded(simfile, self.dest)
 
+class TestDirectoryStructure(unittest.TestCase):
+    def get_valid(self, filename):
+        filename = MODULE_DIR + "/test/zips/" + filename
+        with zipfile.ZipFile(filename) as zfile:
+            return scrape_category.valid_directory_structure(zfile)
+
+    def get_flat(self, filename):
+        filename = MODULE_DIR + "/test/zips/" + filename
+        with zipfile.ZipFile(filename) as zfile:
+            return scrape_category.flat_directory_structure(zfile)
+
+    def get_directory(self, filename):
+        filename = MODULE_DIR + "/test/zips/" + filename
+        with zipfile.ZipFile(filename) as zfile:
+            return scrape_category.get_directory(zfile)
+
+    def test_valid_directory_structure(self):
+        # Looks like most simfiles
+        assert self.get_valid("good_basic.zip")
+        # Simfile directory not explicitely given, but still good
+        assert self.get_valid("good_onefile.zip")
+        # Zipped with the special mac files included
+        # Those files should be ignored
+        assert self.get_valid("good_macfile.zip")
+        # Should be good even though there is an inner directory
+        assert self.get_valid("good_innerdirectory.zip")
+
+        # bad because an extra file at the top level
+        assert not self.get_valid("bad_toplevel.zip")
+        # bad because two directories
+        assert not self.get_valid("bad_twodirectories.zip")
+        # empty zips are not usable
+        assert not self.get_valid("bad_empty.zip")
+
+        # flat, but not considered 'valid'
+        assert not self.get_valid("flat_simfile.zip")
+
+    def test_flat_directory_structure(self):
+        assert not self.get_flat("good_basic.zip")
+        assert not self.get_flat("good_onefile.zip")
+        assert not self.get_flat("good_macfile.zip")
+        assert not self.get_flat("good_innerdirectory.zip")
+        assert not self.get_flat("bad_toplevel.zip")
+        assert not self.get_flat("bad_twodirectories.zip")
+        assert not self.get_flat("bad_empty.zip")
+
+        assert self.get_flat("flat_simfile.zip")
+
+    def test_get_directory(self):
+        assert "foo" ==  self.get_directory("good_basic.zip")
+        assert "foo" == self.get_directory("good_onefile.zip")
+        assert "foo" == self.get_directory("good_macfile.zip")
+        assert "foo" == self.get_directory("good_innerdirectory.zip")
+
 # TODO test:
 # these require fake zipfiles
-#   valid_directory_structure
-#   flat_directory_structure
-#   get_directory
 #   extract_fixing_spaces
 #   extract_simfile
 #   get_simfile_from_ziv (add a fake .zip to our test directory, "download" it)
