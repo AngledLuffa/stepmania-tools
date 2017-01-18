@@ -289,8 +289,8 @@ class TestExtract(unittest.TestCase):
             assert created_inner_dirs == expected_inner_dirs
 
             expected_inner_files = set([
-                os.path.join(self.dest, inner_directory, filename)
-                for filename in expected_files
+                os.path.join(self.dest, inner_directory, expected_file)
+                for expected_file in expected_files
             ])
             created_inner_files = set(glob.glob("%s/*/*" % self.dest))
             assert created_inner_files == expected_inner_files

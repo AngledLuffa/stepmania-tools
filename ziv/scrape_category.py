@@ -651,8 +651,8 @@ def sanitize_name(name):
 
 def extract_simfile(simfile, dest):
     """
-    Given an (id, name) tuple and the destination arg, extract
-    the simfile to the appropriate location.
+    Given an (id, name) tuple and the destination arg,
+    extract the simfile to the appropriate location.
 
     Tries to compensate for a couple error cases.
     If the zipfile does not contain a folder, a folder is created
