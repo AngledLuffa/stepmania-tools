@@ -225,6 +225,10 @@ class TestDirectoryStructure(unittest.TestCase):
         assert self.get_valid("good_macfile.zip")
         # Should be good even though there is an inner directory
         assert self.get_valid("good_innerdirectory.zip")
+        # Should be good - name has a space
+        assert self.get_valid("good_spaces.zip")
+        # One file, no directory
+        assert self.get_valid("good_spaces_onefile.zip")
 
         # bad because an extra file at the top level
         assert not self.get_valid("bad_toplevel.zip")
@@ -241,6 +245,8 @@ class TestDirectoryStructure(unittest.TestCase):
         assert not self.get_flat("good_onefile.zip")
         assert not self.get_flat("good_macfile.zip")
         assert not self.get_flat("good_innerdirectory.zip")
+        assert not self.get_flat("good_spaces.zip")
+        assert not self.get_flat("good_spaces_onefile.zip")
         assert not self.get_flat("bad_toplevel.zip")
         assert not self.get_flat("bad_twodirectories.zip")
         assert not self.get_flat("bad_empty.zip")
@@ -248,10 +254,12 @@ class TestDirectoryStructure(unittest.TestCase):
         assert self.get_flat("flat_simfile.zip")
 
     def test_get_directory(self):
-        assert "foo" ==  self.get_directory("good_basic.zip")
+        assert "foo" == self.get_directory("good_basic.zip")
         assert "foo" == self.get_directory("good_onefile.zip")
         assert "foo" == self.get_directory("good_macfile.zip")
         assert "foo" == self.get_directory("good_innerdirectory.zip")
+        assert "foo" == self.get_directory("good_spaces.zip")
+        assert "foo" == self.get_directory("good_spaces_onefile.zip")
 
 # TODO test:
 # these require fake zipfiles
