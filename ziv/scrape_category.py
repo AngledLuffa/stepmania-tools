@@ -597,7 +597,8 @@ def get_directory(simzip):
     Eg, call valid_directory_structure before calling this function.
     """
     names = filter_mac_files(simzip.namelist())
-    return names[0].split("/")[0].strip()
+    inner_directory = names[0].split("/")[0].strip()
+    return sanitize_name(inner_directory)
 
 
 def extract_fixing_spaces(simzip, dest, inner_directory):

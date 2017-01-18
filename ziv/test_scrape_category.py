@@ -201,17 +201,17 @@ class TestAlreadyDownloaded(unittest.TestCase):
 
 class TestDirectoryStructure(unittest.TestCase):
     def get_valid(self, filename):
-        filename = MODULE_DIR + "/test/zips/" + filename
+        filename = os.path.join(MODULE_DIR, "test/zips", filename)
         with zipfile.ZipFile(filename) as zfile:
             return scrape_category.valid_directory_structure(zfile)
 
     def get_flat(self, filename):
-        filename = MODULE_DIR + "/test/zips/" + filename
+        filename = os.path.join(MODULE_DIR, "test/zips", filename)
         with zipfile.ZipFile(filename) as zfile:
             return scrape_category.flat_directory_structure(zfile)
 
     def get_directory(self, filename):
-        filename = MODULE_DIR + "/test/zips/" + filename
+        filename = os.path.join(MODULE_DIR, "test/zips", filename)
         with zipfile.ZipFile(filename) as zfile:
             return scrape_category.get_directory(zfile)
 
@@ -261,9 +261,47 @@ class TestDirectoryStructure(unittest.TestCase):
         assert "foo" == self.get_directory("good_spaces.zip")
         assert "foo" == self.get_directory("good_spaces_onefile.zip")
 
+class TestExtract(unittest.TestCase):
+    def setUp(self):
+        self.dest = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dest)
+
+    def run_test(self, filename, expected_files,
+                 inner_directory=None):
+        original_filename = os.path.join(MODULE_DIR, "test/zips", filename)
+        temp_filename = os.path.join(self.dest, filename)
+        shutil.copyfile(original_filename, temp_filename)
+
+        with zipfile.ZipFile(temp_filename) as simzip:
+            if not inner_directory:
+                inner_directory = scrape_category.get_directory(simzip)
+            scrape_category.extract_fixing_spaces(simzip, self.dest, inner_directory)
+            expected_inner_dirs = set([os.path.join(self.dest, inner_directory),
+                                       temp_filename])
+            created_inner_dirs = set(glob.glob("%s/*" % self.dest))
+            assert created_inner_dirs == expected_inner_dirs
+
+            expected_inner_files = set([
+                os.path.join(self.dest, inner_directory, filename)
+                for filename in expected_files
+            ])
+            created_inner_files = set(glob.glob("%s/*/*" % self.dest))
+            assert created_inner_files == expected_inner_files
+
+    def test_extract_spaces(self):
+        self.run_test("good_spaces.zip", ["foo.sm"])
+
+    def test_extract_flat(self):
+        self.run_test("flat_simfile.zip", ["foo.txt", "bar.txt"],
+                      inner_directory="foo")
+
+    def test_extract_illegal_char(self):
+        self.run_test("good_illegal_char.zip", ["foo.sm"])
+
 # TODO test:
 # these require fake zipfiles
-#   extract_fixing_spaces
 #   extract_simfile
 #   get_simfile_from_ziv (add a fake .zip to our test directory, "download" it)
 # sanitize_name
