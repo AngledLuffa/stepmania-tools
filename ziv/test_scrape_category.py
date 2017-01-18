@@ -229,6 +229,9 @@ class TestDirectoryStructure(unittest.TestCase):
         assert self.get_valid("good_spaces.zip")
         # One file, no directory
         assert self.get_valid("good_spaces_onefile.zip")
+        # Has a " in the name
+        # We test later that it gets removed in various places
+        assert self.get_valid("good_illegal_char.zip")
 
         # bad because an extra file at the top level
         assert not self.get_valid("bad_toplevel.zip")
@@ -247,6 +250,7 @@ class TestDirectoryStructure(unittest.TestCase):
         assert not self.get_flat("good_innerdirectory.zip")
         assert not self.get_flat("good_spaces.zip")
         assert not self.get_flat("good_spaces_onefile.zip")
+        assert not self.get_flat("good_illegal_char.zip")
         assert not self.get_flat("bad_toplevel.zip")
         assert not self.get_flat("bad_twodirectories.zip")
         assert not self.get_flat("bad_empty.zip")
@@ -260,6 +264,7 @@ class TestDirectoryStructure(unittest.TestCase):
         assert "foo" == self.get_directory("good_innerdirectory.zip")
         assert "foo" == self.get_directory("good_spaces.zip")
         assert "foo" == self.get_directory("good_spaces_onefile.zip")
+        assert "foo" == self.get_directory("good_illegal_char.zip")
 
 class TestExtract(unittest.TestCase):
     def setUp(self):
