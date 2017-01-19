@@ -109,6 +109,14 @@ class TestUtilityMethods(unittest.TestCase):
         result = scrape_category.filter_mac_files(names)
         assert result == expected_names
 
+    def test_sanitize_name(self):
+        """
+        A rather simple test, but this method is indirectly tested quite a
+        bit elsewhere
+        """
+        assert scrape_category.sanitize_name(" foo ") == "foo"
+        assert scrape_category.sanitize_name(' foo" ') == "foo"
+        assert scrape_category.sanitize_name(' foo...bar ') == "foo.bar"
 
 class TestScrapeHomepage(unittest.TestCase):
     PLATFORMS_URL = "file:///" + MODULE_DIR + "/test/simfile_homepage.html"
@@ -338,20 +346,100 @@ class TestExtract(unittest.TestCase):
     def test_extract_simfile_illegal_char(self):
         self.run_simfile_test("good_illegal_char.zip", ["foo.sm"])
 
+class TestDownload(unittest.TestCase):
+    def setUp(self):
+        self.dest = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dest)
+
+    def test_download_and_unlink(self):
+        """
+        Tests a couple of the smaller methods used by download_simfile
+        """
+        simfile = scrape_category.Simfile("100", "Bar", 1000)
+        link = "file:///" + MODULE_DIR + "/test/zips/good_basic.zip"
+
+        scrape_category.get_simfile_from_ziv(simfile, link, self.dest)
+        assert os.path.exists(os.path.join(self.dest, "sim100.zip"))
+
+        scrape_category.unlink_zip(simfile, self.dest)
+        assert not os.path.exists(os.path.join(self.dest, "sim100.zip"))
+
+    def check_saved_files(self, log, unzipped, zipped):
+        expected_set = []
+        if log: expected_set.append("download_log.txt")
+        if unzipped: expected_set.append("foo")
+        if zipped: expected_set.append("sim100.zip")
+        expected_set = set(expected_set)
+
+        files = glob.glob("%s/*" % self.dest)
+        assert (set(os.path.split(x)[1] for x in files) ==
+                expected_set)
+
+        if log:
+            assert scrape_category.get_log_filename(self.dest) in files
+
+    def test_download_simfile(self):
+        """
+        In addition to testing download_simfile (one of the more central
+        methods) this also tests some of the logging done when the
+        simfile name is changed based on the inner zip
+        """
+        simfile = scrape_category.Simfile("100", "Bar", 1000)
+        link = "file:///" + MODULE_DIR + "/test/zips/good_basic.zip"
+
+        scrape_category.download_simfile(simfile, self.dest,
+                                         tidy=False,
+                                         use_logfile=True,
+                                         extract=True,
+                                         link=link)
+
+        # There should now be three files - a download log, a zip, and
+        # an unzipped simfile.
+        self.check_saved_files(log=True, unzipped=True, zipped=True)
+
+        records = {"100": simfile}
+        updated_records = scrape_category.update_records_from_log(records, self.dest)
+        assert len(updated_records) == 1
+        assert "100" in updated_records
+        # The records should be updated to reflect where the simfile
+        # was actually saved
+        assert updated_records["100"].name == "foo"
+
+    def test_download_simfile_tidy(self):
+        simfile = scrape_category.Simfile("100", "Bar", 1000)
+        link = "file:///" + MODULE_DIR + "/test/zips/good_basic.zip"
+
+        scrape_category.download_simfile(simfile, self.dest,
+                                         tidy=True,
+                                         use_logfile=True,
+                                         extract=True,
+                                         link=link)
+
+        self.check_saved_files(log=True, unzipped=True, zipped=False)
+
+    def test_download_simfile_no_extract(self):
+        simfile = scrape_category.Simfile("100", "Bar", 1000)
+        link = "file:///" + MODULE_DIR + "/test/zips/good_basic.zip"
+
+        scrape_category.download_simfile(simfile, self.dest,
+                                         tidy=True,
+                                         use_logfile=True,
+                                         extract=False,
+                                         link=link)
+
+        self.check_saved_files(log=False, unzipped=False, zipped=True)
+
 # TODO test:
-# get_simfile_from_ziv (add a fake .zip to our test directory, "download" it)
-# sanitize_name
-# unlink_zip
 # log files:
-#   get_log_filename
 #   renaming_message
 #   log_renaming_message
-#   get_logged_titles - this may need renaming anyway
 # the whole thing:
-#   download_simfile - would require passing in local URLs
 #   download_simfiles
 #   download_category
 # get_filtered_titles_from_ziv
+# TODO: change titles -> records everywhere
 
 
 if __name__ == '__main__':

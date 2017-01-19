@@ -731,9 +731,9 @@ def log_renaming_message(simfile, actual, dest):
         fout.close()
 
 
-def get_logged_titles(titles, dest):
+def update_records_from_log(records, dest):
     log_filename = get_log_filename(dest)
-    updated = titles.copy()
+    updated = records.copy()
     if not os.path.exists(log_filename):
         return updated
     with codecs.open(log_filename, encoding="utf-8") as fin:
@@ -743,9 +743,9 @@ def get_logged_titles(titles, dest):
                 continue
             simfileid = match.groups()[0]
             name = match.groups()[1]
-            if simfileid not in titles:
+            if simfileid not in records:
                 continue
-            updated[simfileid] = titles[simfileid]._replace(name=name)
+            updated[simfileid] = records[simfileid]._replace(name=name)
     return updated
 
 
@@ -789,8 +789,12 @@ def build_argparser():
     return argparser
 
 
-def download_simfile(simfile, dest, tidy, use_logfile, extract):
-    link = get_file_link_from_ziv(simfile.simfileid)
+def download_simfile(simfile, dest, tidy, use_logfile, extract, link=None):
+    """
+    Given a single simfile record, download that simfile to the dest directory.
+    """
+    if link is None:
+        link = get_file_link_from_ziv(simfile.simfileid)
     get_simfile_from_ziv(simfile, link, dest)
     if extract:
         extracted_directory = extract_simfile(simfile, dest)
@@ -845,7 +849,7 @@ def get_filtered_titles_from_ziv(category, dest,
         print("%d simfiles matched date" % len(titles))
 
     if use_logfile:
-        titles = get_logged_titles(titles, dest)
+        titles = update_records_from_log(titles, dest)
     return titles
 
 
