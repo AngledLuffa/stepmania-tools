@@ -349,6 +349,8 @@ class TestExtract(unittest.TestCase):
 class TestDownload(unittest.TestCase):
     def setUp(self):
         self.dest = tempfile.mkdtemp()
+        self.simfile = scrape_category.Simfile("100", "Bar", 1000)
+        self.link = "file:///" + MODULE_DIR + "/test/zips/good_basic.zip"
 
     def tearDown(self):
         shutil.rmtree(self.dest)
@@ -357,13 +359,10 @@ class TestDownload(unittest.TestCase):
         """
         Tests a couple of the smaller methods used by download_simfile
         """
-        simfile = scrape_category.Simfile("100", "Bar", 1000)
-        link = "file:///" + MODULE_DIR + "/test/zips/good_basic.zip"
-
-        scrape_category.get_simfile_from_ziv(simfile, link, self.dest)
+        scrape_category.get_simfile_from_ziv(self.simfile, self.link, self.dest)
         assert os.path.exists(os.path.join(self.dest, "sim100.zip"))
 
-        scrape_category.unlink_zip(simfile, self.dest)
+        scrape_category.unlink_zip(self.simfile, self.dest)
         assert not os.path.exists(os.path.join(self.dest, "sim100.zip"))
 
     def check_saved_files(self, log, unzipped, zipped):
@@ -386,20 +385,17 @@ class TestDownload(unittest.TestCase):
         methods) this also tests some of the logging done when the
         simfile name is changed based on the inner zip
         """
-        simfile = scrape_category.Simfile("100", "Bar", 1000)
-        link = "file:///" + MODULE_DIR + "/test/zips/good_basic.zip"
-
-        scrape_category.download_simfile(simfile, self.dest,
+        scrape_category.download_simfile(self.simfile, self.dest,
                                          tidy=False,
                                          use_logfile=True,
                                          extract=True,
-                                         link=link)
+                                         link=self.link)
 
         # There should now be three files - a download log, a zip, and
         # an unzipped simfile.
         self.check_saved_files(log=True, unzipped=True, zipped=True)
 
-        records = {"100": simfile}
+        records = {"100": self.simfile}
         updated_records = scrape_category.update_records_from_log(records, self.dest)
         assert len(updated_records) == 1
         assert "100" in updated_records
@@ -408,26 +404,20 @@ class TestDownload(unittest.TestCase):
         assert updated_records["100"].name == "foo"
 
     def test_download_simfile_tidy(self):
-        simfile = scrape_category.Simfile("100", "Bar", 1000)
-        link = "file:///" + MODULE_DIR + "/test/zips/good_basic.zip"
-
-        scrape_category.download_simfile(simfile, self.dest,
+        scrape_category.download_simfile(self.simfile, self.dest,
                                          tidy=True,
                                          use_logfile=True,
                                          extract=True,
-                                         link=link)
+                                         link=self.link)
 
         self.check_saved_files(log=True, unzipped=True, zipped=False)
 
     def test_download_simfile_no_extract(self):
-        simfile = scrape_category.Simfile("100", "Bar", 1000)
-        link = "file:///" + MODULE_DIR + "/test/zips/good_basic.zip"
-
-        scrape_category.download_simfile(simfile, self.dest,
+        scrape_category.download_simfile(self.simfile, self.dest,
                                          tidy=True,
                                          use_logfile=True,
                                          extract=False,
-                                         link=link)
+                                         link=self.link)
 
         self.check_saved_files(log=False, unzipped=False, zipped=True)
 
