@@ -273,42 +273,73 @@ class TestExtract(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.dest)
 
-    def run_test(self, filename, expected_files,
-                 inner_directory=None):
+    def check_results(self, expected_files, inner_directory, temp_filename):
+        expected_inner_dirs = set([os.path.join(self.dest, inner_directory),
+                                   temp_filename])
+        created_inner_dirs = set(glob.glob("%s/*" % self.dest))
+        assert created_inner_dirs == expected_inner_dirs
+
+        expected_inner_files = set([
+            os.path.join(self.dest, inner_directory, expected_file)
+            for expected_file in expected_files
+        ])
+        created_inner_files = set(glob.glob("%s/*/*" % self.dest))
+        assert created_inner_files == expected_inner_files
+
+    def copy_test_simfile(self, filename, copy_to=None):
         original_filename = os.path.join(MODULE_DIR, "test/zips", filename)
-        temp_filename = os.path.join(self.dest, filename)
+        if copy_to is None:
+            copy_to = filename
+        temp_filename = os.path.join(self.dest, copy_to)
         shutil.copyfile(original_filename, temp_filename)
+        return temp_filename
+
+    def run_zip_test(self, filename, expected_files,
+                     inner_directory=None):
+        temp_filename = self.copy_test_simfile(filename)
 
         with zipfile.ZipFile(temp_filename) as simzip:
             if not inner_directory:
                 inner_directory = scrape_category.get_directory(simzip)
-            scrape_category.extract_fixing_spaces(simzip, self.dest, inner_directory)
-            expected_inner_dirs = set([os.path.join(self.dest, inner_directory),
-                                       temp_filename])
-            created_inner_dirs = set(glob.glob("%s/*" % self.dest))
-            assert created_inner_dirs == expected_inner_dirs
+            scrape_category.extract_zip(simzip, self.dest, inner_directory)
+            self.check_results(expected_files, inner_directory, temp_filename)
 
-            expected_inner_files = set([
-                os.path.join(self.dest, inner_directory, expected_file)
-                for expected_file in expected_files
-            ])
-            created_inner_files = set(glob.glob("%s/*/*" % self.dest))
-            assert created_inner_files == expected_inner_files
+    def run_simfile_test(self, filename, expected_files):
+        temp_filename = self.copy_test_simfile(filename, copy_to="sim100.zip")
+        simfile_name = "Bar"
 
-    def test_extract_spaces(self):
-        self.run_test("good_spaces.zip", ["foo.sm"])
+        simfile = scrape_category.Simfile("100", simfile_name, 1000)
+        scrape_category.extract_simfile(simfile, self.dest)
 
-    def test_extract_flat(self):
-        self.run_test("flat_simfile.zip", ["foo.txt", "bar.txt"],
-                      inner_directory="foo")
+        with zipfile.ZipFile(temp_filename) as simzip:
+            if scrape_category.flat_directory_structure(simzip):
+                inner_directory = simfile_name
+            else:
+                inner_directory = "foo"
 
-    def test_extract_illegal_char(self):
-        self.run_test("good_illegal_char.zip", ["foo.sm"])
+        self.check_results(expected_files, inner_directory, temp_filename)
+
+    def test_extract_zip_spaces(self):
+        self.run_zip_test("good_spaces.zip", ["foo.sm"])
+
+    def test_extract_zip_flat(self):
+        self.run_zip_test("flat_simfile.zip", ["foo.txt", "bar.txt"],
+                          inner_directory="foo")
+
+    def test_extract_zip_illegal_char(self):
+        self.run_zip_test("good_illegal_char.zip", ["foo.sm"])
+
+    def test_extract_simfile_spaces(self):
+        self.run_simfile_test("good_spaces.zip", ["foo.sm"])
+
+    def test_extract_simfile_flat(self):
+        self.run_simfile_test("flat_simfile.zip", ["foo.txt", "bar.txt"])
+
+    def test_extract_simfile_illegal_char(self):
+        self.run_simfile_test("good_illegal_char.zip", ["foo.sm"])
 
 # TODO test:
-# these require fake zipfiles
-#   extract_simfile
-#   get_simfile_from_ziv (add a fake .zip to our test directory, "download" it)
+# get_simfile_from_ziv (add a fake .zip to our test directory, "download" it)
 # sanitize_name
 # unlink_zip
 # log files:

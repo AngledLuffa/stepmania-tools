@@ -601,7 +601,7 @@ def get_directory(simzip):
     return sanitize_name(inner_directory)
 
 
-def extract_fixing_spaces(simzip, dest, inner_directory):
+def extract_zip(simzip, dest, inner_directory):
     """
     Unfortunately, some files have spaces at the end of their
     directory names, and on Windows that screws everything up.  This
@@ -672,7 +672,7 @@ def extract_simfile(simfile, dest):
             # There is no inner directory, but we will treat the
             # directory we create as the location for the files
             extracted_directory = sanitize_name(simfile.name)
-            extract_fixing_spaces(simzip, dest, extracted_directory)
+            extract_zip(simzip, dest, extracted_directory)
         elif not valid_directory_structure(simzip):
             print("Invalid directory structure in %s" % filename)
         else:
@@ -682,7 +682,7 @@ def extract_simfile(simfile, dest):
             # to eliminate files such as _MACOSX
             extracted_directory = get_directory(simzip)
             extracted_directory = sanitize_name(extracted_directory)
-            extract_fixing_spaces(simzip, dest, extracted_directory)
+            extract_zip(simzip, dest, extracted_directory)
     except (zipfile.BadZipfile, IOError, WindowsError):
         print("Unable to extract %s" % filename)
         if (extracted_directory is not None and
