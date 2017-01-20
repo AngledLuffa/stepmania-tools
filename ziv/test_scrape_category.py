@@ -159,7 +159,12 @@ class TestScrapeHomepage(unittest.TestCase):
 
             # test the "force" option - check that the new mod time is
             # later than the previous mod time
-            time.sleep(0.02)
+            # if we're on a filesystem with resolution of 1.0s,
+            # we need to wait a second.  otherwise, don't want to wait
+            if round(original_time) == original_time:
+                time.sleep(1)
+            else:
+                time.sleep(0.02)
             cached_platforms = scrape_category.cached_scrape_platforms(self.PLATFORMS_URL, force=True, cache_dir=cache_dir)
             assert platforms == cached_platforms
             assert len(glob.glob("%s/*" % cache_dir)) == 1
@@ -189,7 +194,7 @@ class TestAlreadyDownloaded(unittest.TestCase):
         
     def test_already_downloaded_sanitize(self):
         simfile = scrape_category.Simfile(simfileid='27069',
-                                          name='Cruise.',
+                                          name='Cruise"',
                                           age=26784000)
         self.touch(self.dest, 'Cruise')
         assert scrape_category.simfile_already_downloaded(simfile, self.dest)
