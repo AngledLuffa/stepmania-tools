@@ -48,11 +48,27 @@ recover from network errors
 # OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import os
-import cPickle as pickle
 
-import Tkinter as tk
-import ttk
-import tkFileDialog
+# python 2.7/3.6 compatability
+try:
+    import cPickle as pickle
+except (ImportError, ModuleNotFoundError):
+    import pickle
+
+try:
+    import Tkinter as tk
+except ModuleNotFoundError:
+    import tkinter as tk
+
+try:
+    import ttk
+except ModuleNotFoundError:
+    from tkinter import ttk
+
+try:
+    import tkFileDialog as filedialog
+except ModuleNotFoundError:
+    from tkinter import filedialog
 
 import scrape_category
 
@@ -89,9 +105,9 @@ def config_file():
 
 def load_config():
     try:
-        with open(config_file()) as fin:
+        with open(config_file(), 'rb') as fin:
             config = pickle.load(fin)
-    except (OSError, IOError):
+    except (OSError, IOError, pickle.UnpicklingError):
         config = {}
     return config.get("initial_path", None)
 
@@ -100,7 +116,7 @@ def save_config(initial_path):
     config = {"initial_path": initial_path}
 
     try:
-        with open(config_file(), "w") as fout:
+        with open(config_file(), 'wb') as fout:
             pickle.dump(config, fout)
     except:
         try:
@@ -238,8 +254,9 @@ class App(tk.Tk):
         self.category_map = category_map
 
     def ask_directory(self):
-        new_dir = tkFileDialog.askdirectory(parent=self.frame,
-                                            title="Directory to save simfiles")
+        self.frame.update()
+        new_dir = filedialog.askdirectory(parent=self.frame,
+                                          title="Directory to save simfiles")
         if new_dir:
             self.directory_var.set(new_dir)
             save_config(initial_path=new_dir)

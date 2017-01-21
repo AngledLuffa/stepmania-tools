@@ -84,9 +84,9 @@ class TestUtilityMethods(unittest.TestCase):
 
     def test_get_content(self):
         content_url = "file:///" + MODULE_DIR + "/test/small_content.txt"
-        content = scrape_category.get_content(content_url, split=True)
+        content = scrape_category.get_content(content_url, split=True, force_decode=True)
         assert content == ["foo", "bar"]
-        content = scrape_category.get_content(content_url, split=False)
+        content = scrape_category.get_content(content_url, split=False, force_decode=True)
         assert content == "foo\nbar"
     
     def test_filter_prefix(self):

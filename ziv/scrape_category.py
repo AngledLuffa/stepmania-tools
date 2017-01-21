@@ -7,7 +7,7 @@ If you are reading this on github and looking for a way to download
 the script, look for the button labeled "Raw" to the upper right.
 Download to the directory where you want the simfiles downloaded.
 You will need Python installed.  www.python.org
-The program is compatible with 2.7.  Python 3 has not been tested.
+The program is compatible with 3.6.  Python 2 has not been tested.
 
 Run with no arguments to download those files to the current directory.
 
@@ -43,16 +43,30 @@ as they would require logging in.
 
 import argparse
 import codecs
-import cPickle as pickle
 import datetime
 import os
 import re
 import sys
-import urllib2
 import time
 import zipfile
 from collections import namedtuple, OrderedDict
-from HTMLParser import HTMLParser
+
+# python 2.7/3.6 compatability
+try:
+    import cPickle as pickle
+except (ImportError, ModuleNotFoundError):
+    import pickle
+
+try:
+    from urllib2 import urlopen
+except ModuleNotFoundError:
+    from urllib.request import urlopen
+
+try:
+    from HTMLParser import HTMLParser
+except ModuleNotFoundError:
+    from html.parser import HTMLParser
+
 
 CURRENT_WEEK = "[Round B]"
 DEFAULT_CATEGORY = "957"
@@ -303,6 +317,10 @@ class DownloadHTMLParser(HTMLParser):
 
     Possibly there will be some links for owner commands in the first
     <td>, such as a delete command.
+
+    TODO: it might be better to parse the whole webpage, since the
+    user might have put the word ZIP in their description, for
+    example.
     """
     def __init__(self):
         HTMLParser.__init__(self)
@@ -347,19 +365,24 @@ class DownloadHTMLParser(HTMLParser):
         self.size = float(data) * 1024 * 1024
 
 
-def get_content(url, split=True):
+def get_content(url, split=True, force_decode=False):
     """
     Opens the URL, downloads the page.
 
     Respects encoding if possible.
     If split=True, splits the page on newlines.
     """
-    connection = urllib2.urlopen(url)
-    encoding = connection.headers.getparam('charset')
+    connection = urlopen(url)
+    try:
+        encoding = connection.headers.get_charset()
+    except AttributeError:
+        encoding = connection.headers.getparam('charset')
     if encoding is not None:
         content = connection.read().decode(encoding)
     else:
         content = connection.read()
+        if force_decode:
+            content = content.decode('utf-8')
     connection.close()
 
     if split:
@@ -379,7 +402,7 @@ def scrape_platforms(url=ZIV_SIMFILE_CATEGORIES):
     print("Downloading simfiles home page from:")
     print(url)
 
-    content = get_content(url, split=False)
+    content = get_content(url, split=False, force_decode=True)
     parser = SimfileHomepageHTMLParser()
     parser.feed(content)
     return parser.platforms
@@ -401,7 +424,7 @@ def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES,
             os.remove(cache_file)
         else:
             try:
-                with open(cache_file) as fin:
+                with open(cache_file, 'rb') as fin:
                     platform_map = pickle.load(fin)
             except (OSError, IOError):
                 print("Unable to load cached file, ignoring")
@@ -412,7 +435,7 @@ def cached_scrape_platforms(url=ZIV_SIMFILE_CATEGORIES,
     # if anything goes wrong, make a best effort attempt to clean up a
     # partially written cached.pkl
     try:
-        with open(cache_file, "w") as fout:
+        with open(cache_file, "wb") as fout:
             pickle.dump(platform_map, fout)
     except:
         try:
@@ -439,7 +462,7 @@ def get_category_from_ziv(category, url=ZIV_CATEGORY):
     print("Downloading category from:")
     print(url)
 
-    content = get_content(url, split=False)
+    content = get_content(url, split=False, force_decode=True)
     parser = CategoryHTMLParser()
     parser.feed(content)
     results = parser.simfiles
@@ -457,14 +480,15 @@ def get_file_link_from_ziv(simfileid, url=ZIV_SIMFILE):
     the largest zip file on that link
     """
     url = url % simfileid
-    content = get_content(url)
+    content = get_content(url, split=True, force_decode=True)
     zip_lines = [x for x in content if "ZIP" in x]
 
     results = []
     for i in zip_lines:
         parser = DownloadHTMLParser()
         parser.feed(i)
-        results.append((parser.link, parser.size))
+        if parser.link is not None:
+            results.append((parser.link, parser.size))
 
     # sort by size, so we download the largest and presumably the most
     # interesting
