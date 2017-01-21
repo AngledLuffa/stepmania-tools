@@ -433,8 +433,7 @@ class TestDownload(unittest.TestCase):
 # the whole thing:
 #   download_simfiles
 #   download_category
-# get_filtered_titles_from_ziv
-# TODO: change titles -> records everywhere
+# get_filtered_records_from_ziv
 
 
 if __name__ == '__main__':

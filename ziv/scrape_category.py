@@ -814,43 +814,43 @@ def download_simfile(simfile, dest, tidy, use_logfile, extract, link=None):
             unlink_zip(simfile, dest)
 
 
-def download_simfiles(titles, dest, tidy, use_logfile, extract):
+def download_simfiles(records, dest, tidy, use_logfile, extract):
     """
     Downloads the simfiles and returns how many zips were actually downloaded.
 
-    titles : map from ziv id to Simfile
+    records : map from ziv id to Simfile
     dest : directory to send the simfiles (and logs)
     tidy : clean up zips if the simfiles are successfully extracted
     use_logfile : write a log to that directory
     """
     count = 0
-    for simfile in titles.values():
+    for simfile in records.values():
         if not simfile_already_downloaded(simfile, dest):
             download_simfile(simfile, dest, tidy, use_logfile, extract)
             count = count + 1
     return count
 
 
-def get_filtered_titles_from_ziv(category, dest,
-                                 prefix, regex, since, use_logfile):
-    titles = get_category_from_ziv(category)
+def get_filtered_records_from_ziv(category, dest,
+                                  prefix, regex, since, use_logfile):
+    records = get_category_from_ziv(category)
     if prefix:
-        titles = filter_simfiles_prefix(titles, prefix)
-        print("%d simfiles matched prefix" % len(titles))
+        records = filter_simfiles_prefix(records, prefix)
+        print("%d simfiles matched prefix" % len(records))
 
     if regex:
-        titles = filter_simfiles_regex(titles, regex)
-        print("%d simfiles matched regex" % len(titles))
+        records = filter_simfiles_regex(records, regex)
+        print("%d simfiles matched regex" % len(records))
 
     if since:
         since = since.strip()
     if since:
-        titles = filter_simfiles_since(titles, since)
-        print("%d simfiles matched date" % len(titles))
+        records = filter_simfiles_since(records, since)
+        print("%d simfiles matched date" % len(records))
 
     if use_logfile:
-        titles = update_records_from_log(titles, dest)
-    return titles
+        records = update_records_from_log(records, dest)
+    return records
 
 
 def download_category(category, dest,
@@ -860,14 +860,14 @@ def download_category(category, dest,
                       use_logfile=True,
                       extract=True,
                       tidy=True):
-    titles = get_filtered_titles_from_ziv(category=category,
-                                          dest=dest,
-                                          prefix=prefix,
-                                          regex=regex,
-                                          since=since,
-                                          use_logfile=use_logfile)
+    records = get_filtered_records_from_ziv(category=category,
+                                            dest=dest,
+                                            prefix=prefix,
+                                            regex=regex,
+                                            since=since,
+                                            use_logfile=use_logfile)
 
-    count = download_simfiles(titles=titles,
+    count = download_simfiles(records=records,
                               dest=dest,
                               tidy=tidy,
                               use_logfile=use_logfile,
