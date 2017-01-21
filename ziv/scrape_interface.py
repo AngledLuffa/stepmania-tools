@@ -270,12 +270,12 @@ class App(tk.Tk):
         elif self.filter_choice.get() == 2:
             regex = self.regex_entry.get()
         since = self.since_entry.get()
-        titles = scrape_category.get_filtered_titles_from_ziv(category=category_id,
-                                                              dest=download_directory,
-                                                              prefix=prefix,
-                                                              regex=regex,
-                                                              since=since,
-                                                              use_logfile=True)
+        titles = scrape_category.get_filtered_records_from_ziv(category=category_id,
+                                                               dest=download_directory,
+                                                               prefix=prefix,
+                                                               regex=regex,
+                                                               since=since,
+                                                               use_logfile=True)
         print("Found %d matching simfiles" % len(titles))
         self.progress["value"] = 0
         self.progress["maximum"] = len(titles)
