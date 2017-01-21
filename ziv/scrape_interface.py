@@ -52,22 +52,22 @@ import os
 # python 2.7/3.6 compatability
 try:
     import cPickle as pickle
-except (ImportError, ModuleNotFoundError):
+except ImportError:
     import pickle
 
 try:
     import Tkinter as tk
-except ModuleNotFoundError:
+except ImportError:
     import tkinter as tk
 
 try:
     import ttk
-except ModuleNotFoundError:
+except ImportError:
     from tkinter import ttk
 
 try:
     import tkFileDialog as filedialog
-except ModuleNotFoundError:
+except ImportError:
     from tkinter import filedialog
 
 import scrape_category

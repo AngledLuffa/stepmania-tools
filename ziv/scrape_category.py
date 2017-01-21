@@ -54,17 +54,17 @@ from collections import namedtuple, OrderedDict
 # python 2.7/3.6 compatability
 try:
     import cPickle as pickle
-except (ImportError, ModuleNotFoundError):
+except ImportError:
     import pickle
 
 try:
     from urllib2 import urlopen
-except ModuleNotFoundError:
+except ImportError:
     from urllib.request import urlopen
 
 try:
     from HTMLParser import HTMLParser
-except ModuleNotFoundError:
+except ImportError:
     from html.parser import HTMLParser
 
 
