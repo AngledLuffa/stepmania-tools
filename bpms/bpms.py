@@ -40,7 +40,7 @@ if __name__ == "__main__":
     lines = [line.split("#")[0] for line in lines]
     times = [float(line) for line in lines if line]
 
-    print "// BPMS THAT GO THROUGH THE GIVEN TIMES"
+    print("// BPMS THAT GO THROUGH THE GIVEN TIMES")
 
     current_beat = start_beat
     beats = [current_beat]
@@ -48,13 +48,13 @@ if __name__ == "__main__":
         interval = round((end - start) / (60. / bpm) * 2) / 2.0
         tempo = 60. / (end - start) * interval
         if index == 0:
-            print "#OFFSET:%.4f;" % (-times[0] + (60. / tempo) * current_beat)
-            print "#BPMS:"
+            print("#OFFSET:%.4f;" % (-times[0] + (60. / tempo) * current_beat))
+            print("#BPMS:")
         continuation = "," if index < len(times) - 2 else ";"
         display_beat = current_beat if index > 0 else 0
         # comment = " # %d" % start
         comment = ""
-        print "%.1f=%.4f%s%s" % (display_beat, tempo, continuation, comment)
+        print("%.1f=%.4f%s%s" % (display_beat, tempo, continuation, comment))
         current_beat = current_beat + interval
         beats.append(current_beat)
 
@@ -70,15 +70,15 @@ if __name__ == "__main__":
     A = (N * sum_xy - sum_x * sum_y) / (N * sum_xx - sum_x * sum_x)
     B = (sum_y * sum_xx - sum_x * sum_xy) / (N * sum_xx - sum_x * sum_x)
 
-    print
-    print
-    print "// OFFSET, BPM DETERMINED BY LSR"
-    print "#OFFSET:%.4f" % -B
-    print "#BPMS:%.4f" % (60.0 / A)
+    print()
+    print()
+    print("// OFFSET, BPM DETERMINED BY LSR")
+    print("#OFFSET:%.4f" % -B)
+    print("#BPMS:%.4f" % (60.0 / A))
 
-    print
-    print "// Errors between the fixed BPM and the times given"
-    print "projected / actual / error"
+    print()
+    print("// Errors between the fixed BPM and the times given")
+    print("projected / actual / error")
     projected_times = [B + A * x for x in beats]
     for x, y in zip(projected_times, times):
-        print "%.3f %.3f %.3f" % (x, y, x - y)
+        print("%.3f %.3f %.3f" % (x, y, x - y))
