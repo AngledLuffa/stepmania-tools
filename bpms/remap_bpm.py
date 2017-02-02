@@ -24,7 +24,12 @@ import argparse
 import copy
 import math
 import re
-import string
+
+# 2/3 compatibility
+try:
+    xrange
+except NameError:
+    xrange = range
 
 def numbered_list(value, key_name):
     """
@@ -151,8 +156,8 @@ def combine_steps(A, B, mode, chart, m_num, s_num):
             # start hold, we can separate them by the "snap"
             # However, that might require a bit of a redoing
             raise RuntimeError("Cannot combine steps %s %s of %s %s in (%d %d)" % (A, B, mode, chart, m_num, s_num))
-    step = string.join(step, "")
-    print "Warning: combined steps %s, %s of %s %s to get %s at (%d %d)" % (A, B, mode, chart, step, m_num, s_num)
+    step = "".join(step)
+    print("Warning: combined steps %s, %s of %s %s to get %s at (%d %d)" % (A, B, mode, chart, step, m_num, s_num))
     return step
 
 def fix_stepchart(old_simfile, new_simfile, old_chart, snap):
@@ -192,10 +197,10 @@ def fix_stepchart(old_simfile, new_simfile, old_chart, snap):
         new_measures[m_num][s_num] = combine_steps(new_measures[m_num][s_num], step[1], chart_pieces[0], chart_pieces[2], m_num, s_num)
 
 
-    measure_text = [string.join(x, "\n") for x in new_measures]
-    chart_text = string.join(measure_text, "\n,\n")
+    measure_text = ["\n".join(x) for x in new_measures]
+    chart_text = "\n,\n".join(measure_text)
     chart_pieces[5] = chart_text
-    return string.join(chart_pieces, ":\n")
+    return ":\n".join(chart_pieces)
     
 
 def fix_notes(old_simfile, new_simfile, snap):
@@ -259,7 +264,7 @@ def fix_bg_changes(old_simfile, new_simfile):
         time = old_simfile.time(float(beat))
         new_beat = new_simfile.beat(time)
         new_changes.append("%0.3f=%s" % (new_beat, effect))
-    new_simfile.pairs[index] = (new_simfile.pairs[index][0], string.join(new_changes, ",\n"))
+    new_simfile.pairs[index] = (new_simfile.pairs[index][0], ",\n".join(new_changes))
 
 def write_simfile(filename, simfile):
     fout = open(filename, "w")
