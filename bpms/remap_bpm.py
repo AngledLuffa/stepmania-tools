@@ -92,6 +92,9 @@ class Simfile(object):
                 self.pairs[i] = ("OFFSET", offset)
 
     def beat(self, time):
+        """
+        Converts a time to a beat
+        """
         if time == -self.offset:
             return 0.0
         if time < -self.offset:
