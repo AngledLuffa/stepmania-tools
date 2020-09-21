@@ -33,6 +33,9 @@ offset, bpms which can be copy/pasted into the .sm file
 import sys
 
 if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("%s filename bpm [offset-beat]" % sys.argv[0])
+        sys.exit(0)
     filename = sys.argv[1]
     bpm = float(sys.argv[2])
     start_beat = float(sys.argv[3]) if len(sys.argv) > 3 else 0.0
