@@ -179,7 +179,7 @@ class CategoryHTMLParser(HTMLParser):
 
         if self.simfileid is None and tag == 'a':
             for attr in attrs:
-                if attr[0] == "name":
+                if attr[0] == "name" or attr[0] == "id":
                     self.simfileid = attr[1][3:]
             if self.simfileid is None:
                 raise RuntimeError("Link does not have name: {}".format(attrs))
