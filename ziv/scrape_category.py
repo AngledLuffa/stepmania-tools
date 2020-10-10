@@ -932,7 +932,10 @@ def main():
     # TODO other stuff:
     # write unit tests
     # use the logging library
-    sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
+    try:
+        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
+    except AttributeError:
+        sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
 
     argparser = build_argparser()
     args = argparser.parse_args()

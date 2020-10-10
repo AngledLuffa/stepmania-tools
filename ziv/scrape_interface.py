@@ -47,7 +47,9 @@ recover from network errors
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 # OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import codecs
 import os
+import sys
 
 # python 2.7/3.6 compatability
 try:
@@ -315,6 +317,11 @@ class App(tk.Tk):
 
 
 def main():
+    try:
+        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
+    except AttributeError:
+        sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
+
     category_map = scrape_category.cached_scrape_platforms()
 
     root = tk.Tk()
