@@ -33,6 +33,8 @@ TODO:
 Break downloads into chunks so there is more granularity for the UI
 redirect/copy stdout to a text window
 recover from network errors
+put the initial filter into the config file
+allow dates for the age
 """
 
 # Copyright 2016 by John Bauer
