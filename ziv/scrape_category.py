@@ -146,19 +146,21 @@ class CategoryHTMLParser(HTMLParser):
         self.age = None
 
         self.in_table = False
-        self.finished_table = False
         self.tr_count = 0
         self.in_title = False
 
         self.in_age = False
 
     def handle_starttag(self, tag, attrs):
-        if self.finished_table:
-            return
-
         if not self.in_table and tag == 'table':
-            # the first table on the ziv category pages is the one
-            # which contains the simfile information
+            # simfile information on ziv is in a table
+            # note that some pages can have multiple tables with songs
+            # there is also a table at the bottom with server stats
+            # currently we are trying to distinguish that by looking
+            # at the class attr
+            for k, v in attrs:
+                if k == 'class' and v == 'noborder':
+                    return
             self.in_table = True
             return
 
@@ -188,9 +190,6 @@ class CategoryHTMLParser(HTMLParser):
             self.in_age = True
 
     def handle_data(self, data):
-        if self.finished_table:
-            return
-
         if self.in_title:
             if self.title is None:
                 self.title = data
@@ -203,9 +202,6 @@ class CategoryHTMLParser(HTMLParser):
             self.age = data
 
     def handle_endtag(self, tag):
-        if self.finished_table:
-            return
-
         if self.in_title:
             assert tag == "a"
             self.in_title = False
@@ -225,7 +221,6 @@ class CategoryHTMLParser(HTMLParser):
 
         if self.in_table and tag == 'table':
             self.in_table = False
-            self.finished_table = True
 
     #def feed(self, data):
     #    HTMLParser.feed(self, data)

@@ -19,6 +19,14 @@ EXPECTED_SIMFILES = {
     '27069': scrape_category.Simfile(simfileid='27069', name='Cruise', age=26784000)
 }
 
+EXPECTED_MULTITABLE_SIMFILES = {
+    '38604': scrape_category.Simfile(simfileid='38604', name='idontwannabeyouanymore', age=34784640),
+    '36849': scrape_category.Simfile(simfileid='36849', name='Change Your Mind (No Seas Cortés)', age=34784640),
+    '38822': scrape_category.Simfile(simfileid='38822', name='Motivation', age=34784640),
+    '36774': scrape_category.Simfile(simfileid='36774', name='needy', age=34784640),
+    '36761': scrape_category.Simfile(simfileid='36761', name='thank u, next', age=34784640),
+}
+
 EXPECTED_FILTERED = {
     '26965': scrape_category.Simfile(simfileid='26965', name="Don't Sleep in the Subway", age=138240),
     '26969': scrape_category.Simfile(simfileid='26969', name='Dai Yan Ren', age=1451520)
@@ -56,6 +64,11 @@ class TestScrapeCategory(unittest.TestCase):
         """
         simfiles = scrape_category.get_category_from_ziv("category_test", self.CATEGORY_URL)
         compare_simfile_records(simfiles, EXPECTED_SIMFILES)
+
+    def test_multitable_scrape(self):
+        simfiles = scrape_category.get_category_from_ziv("category_test_multitable", self.CATEGORY_URL)
+        compare_simfile_records(simfiles, EXPECTED_MULTITABLE_SIMFILES)
+        
 
 class TestFileLinks(unittest.TestCase):
     SIMFILE_URL = "file:///" + MODULE_DIR + "/test/simfile_%s.html"
