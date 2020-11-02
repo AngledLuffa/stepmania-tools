@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     print()
     print("// Errors between the fixed BPM and the times given")
-    print("projected / actual / error")
+    print("actual / projected / error")
     projected_times = [B + A * x for x in beats]
     for x, y in zip(projected_times, times):
-        print("%.3f %.3f %.3f" % (x, y, x - y))
+        print("%.3f %.3f %.3f" % (y, x, x - y))
