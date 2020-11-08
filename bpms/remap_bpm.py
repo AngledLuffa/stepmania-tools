@@ -154,6 +154,9 @@ def combine_steps(A, B, mode, chart, m_num, s_num):
             step.append(j)
         elif j == '0':
             step.append(i)
+        elif i == '2' and j == '3':
+            print("Warning: turned a very short hold into a tap at %s %s (%d %d)" % (mode, chart, m_num, s_num))
+            step.append('1')
         else:
             # TODO: If there is an end hold followed immediately but a
             # start hold, we can separate them by the "snap"
