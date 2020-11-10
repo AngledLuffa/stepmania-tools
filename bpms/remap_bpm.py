@@ -1,4 +1,4 @@
-# Copyright 2016-2017 by John Bauer
+# Copyright 2016-2020 by John Bauer
 # Distributed under the Apache License 2.0
 
 # TO THE EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS",
