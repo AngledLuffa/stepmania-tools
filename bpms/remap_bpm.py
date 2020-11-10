@@ -140,6 +140,7 @@ class Simfile(object):
             return time
 
 all_zeros = re.compile("^0+$")
+POSITIVE_FLOAT = re.compile("^[0-9]+([.][0-9]+)?$")
 
 def combine_steps(A, B, mode, chart, m_num, s_num):
     if len(A) != len(B):
@@ -285,7 +286,7 @@ if __name__ == "__main__":
     parser.add_argument('--output', default=None, required=True,
                         help="Where to write the translated file")
     parser.add_argument('--bpms', default=None, required=True,
-                        help="BPM to use: use sm format")
+                        help="BPM to use: use sm format or give a single bpm")
     parser.add_argument('--stops', default="",
                         help="STOPS to use: use sm format")
     parser.add_argument('--offset', default=None,
@@ -293,6 +294,8 @@ if __name__ == "__main__":
     parser.add_argument('--snap', default=16, type=int,
                         help="Beat division for snapping the steps")
     args = parser.parse_args()
+    if POSITIVE_FLOAT.match(args.bpms):
+        args.bpms = "0.0=%s" % args.bpms
 
     old_simfile = read_simfile(args.input)
     new_simfile = copy.deepcopy(old_simfile)
