@@ -291,7 +291,7 @@ if __name__ == "__main__":
                         help="STOPS to use: use sm format")
     parser.add_argument('--offset', default=None,
                         help="New offset to use (blank = keep existing)")
-    parser.add_argument('--snap', default=16, type=int,
+    parser.add_argument('--snap', default=48, type=int,
                         help="Beat division for snapping the steps")
     args = parser.parse_args()
     if POSITIVE_FLOAT.match(args.bpms):
