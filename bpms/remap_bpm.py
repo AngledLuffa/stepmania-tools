@@ -278,8 +278,7 @@ def write_simfile(filename, simfile):
     for i in simfile.pairs:
         fout.write("#%s:%s;\n" % (i[0], i[1]))
 
-
-if __name__ == "__main__":
+def parse_args():
     parser = argparse.ArgumentParser(description='Remap BPMs')
     parser.add_argument('--input', default=None, required=True,
                         help="Which file to read for input")
@@ -296,6 +295,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if POSITIVE_FLOAT.match(args.bpms):
         args.bpms = "0.0=%s" % args.bpms
+
+    return args
+
+if __name__ == "__main__":
+    args = parse_args()
 
     old_simfile = read_simfile(args.input)
     new_simfile = copy.deepcopy(old_simfile)
