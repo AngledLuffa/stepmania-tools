@@ -81,12 +81,14 @@ class Simfile(object):
         """
         if offset is not None:
             self.offset = float(offset)
-        self.bpms = numbered_list(bpms, "BPMS")
+        if bpms is not None:
+            self.bpms = numbered_list(bpms, "BPMS")
+            for i in xrange(len(self.pairs)):
+                if self.pairs[i][0].lower() == "bpms":
+                    self.pairs[i] = ("BPMS", bpms)
         self.stops = numbered_list(stops, "STOPS")
         for i in xrange(len(self.pairs)):
-            if self.pairs[i][0].lower() == "bpms":
-                self.pairs[i] = ("BPMS", bpms)
-            elif self.pairs[i][0].lower() == "stops":
+            if self.pairs[i][0].lower() == "stops":
                 self.pairs[i] = ("STOPS", stops)
             elif offset is not None and self.pairs[i][0].lower() == "offset":
                 self.pairs[i] = ("OFFSET", offset)
@@ -284,7 +286,7 @@ def parse_args():
                         help="Which file to read for input")
     parser.add_argument('--output', default=None, required=True,
                         help="Where to write the translated file")
-    parser.add_argument('--bpms', default=None, required=True,
+    parser.add_argument('--bpms', default=None,
                         help="BPM to use: use sm format or give a single bpm")
     parser.add_argument('--stops', default="",
                         help="STOPS to use: use sm format")
