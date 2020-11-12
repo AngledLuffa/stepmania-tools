@@ -295,7 +295,7 @@ def parse_args():
     parser.add_argument('--snap', default=48, type=int,
                         help="Beat division for snapping the steps")
     args = parser.parse_args()
-    if POSITIVE_FLOAT.match(args.bpms):
+    if args.bpms and POSITIVE_FLOAT.match(args.bpms):
         args.bpms = "0.0=%s" % args.bpms
 
     return args
