@@ -169,7 +169,42 @@ def combine_steps(A, B, mode, chart, m_num, s_num):
     print("Warning: combined steps %s, %s of %s %s to get %s at (%d %d)" % (A, B, mode, chart, step, m_num, s_num))
     return step
 
-def fix_stepchart(old_simfile, new_simfile, old_chart, snap):
+def remove_small_holds_from_stepchart(new_measures, remove_small_holds, mode, chart):
+    if remove_small_holds <= 0.0:
+        return
+    for measure_idx, measure in enumerate(new_measures):
+        for beat_idx, beat in enumerate(measure):
+            for foot_idx, foot in enumerate(beat):
+                if foot != '2' and foot != '4':
+                    # holds are 2, rolls are 4
+                    continue
+                hold_length = 0
+                next_beat_idx = beat_idx
+                next_measure_idx = measure_idx
+                while next_measure_idx < len(new_measures):
+                    hold_length = hold_length + 4.0 / len(new_measures[next_measure_idx])
+                    if hold_length > remove_small_holds:
+                        # have eaten enough time that we no longer
+                        # consider this a small hold
+                        break
+                    if new_measures[next_measure_idx][next_beat_idx][foot_idx] == '3':
+                        # found the end, and the hold is shorter than the threshold
+                        print("Found a short hold in %s, %s.  Turning a hold at %d, %d, %d to a tap" %
+                              (mode, chart, measure_idx, beat_idx, foot_idx))
+                        new_step = new_measures[measure_idx][beat_idx]
+                        new_step = new_step[:foot_idx] + "1" + new_step[foot_idx+1:]
+                        new_measures[measure_idx][beat_idx] = new_step
+                        new_step = new_measures[next_measure_idx][next_beat_idx]
+                        new_step = new_step[:foot_idx] + "0" + new_step[foot_idx+1:]
+                        new_measures[next_measure_idx][next_beat_idx] = new_step
+                        break
+                    next_beat_idx = next_beat_idx + 1
+                    if next_beat_idx >= len(new_measures[next_measure_idx]):
+                        next_beat_idx = 0
+                        next_measure_idx = next_measure_idx + 1
+
+
+def fix_stepchart(old_simfile, new_simfile, old_chart, snap, remove_small_holds):
     chart_pieces = [x.strip() for x in old_chart.split(":")]
     measures = [x.strip() for x in chart_pieces[5].strip().split(",")]
     interesting_steps = []
@@ -205,6 +240,7 @@ def fix_stepchart(old_simfile, new_simfile, old_chart, snap):
         s_num = int(round((step[0] - m_num * 4.0) * snap / 4))
         new_measures[m_num][s_num] = combine_steps(new_measures[m_num][s_num], step[1], chart_pieces[0], chart_pieces[2], m_num, s_num)
 
+    remove_small_holds_from_stepchart(new_measures, remove_small_holds, chart_pieces[0], chart_pieces[2])
 
     measure_text = ["\n".join(x) for x in new_measures]
     chart_text = "\n,\n".join(measure_text)
@@ -212,10 +248,11 @@ def fix_stepchart(old_simfile, new_simfile, old_chart, snap):
     return ":\n".join(chart_pieces)
     
 
-def fix_notes(old_simfile, new_simfile, snap):
+def fix_notes(old_simfile, new_simfile, snap, remove_small_holds):
     for i in xrange(len(new_simfile.pairs)):
         if new_simfile.pairs[i][0].lower() == "notes":
-            new_chart = fix_stepchart(old_simfile, new_simfile, new_simfile.pairs[i][1], snap)
+            new_chart = fix_stepchart(old_simfile, new_simfile, new_simfile.pairs[i][1],
+                                      snap, remove_small_holds)
             new_simfile.pairs[i] = (new_simfile.pairs[i][0], new_chart)
 
 def read_simfile(filename):
@@ -294,6 +331,9 @@ def parse_args():
                         help="New offset to use (blank = keep existing)")
     parser.add_argument('--snap', default=48, type=int,
                         help="Beat division for snapping the steps")
+    parser.add_argument('--remove_small_holds', type=float, default=0.0,
+                        help="Remove holds & rolls which take up less than this value in beats.")
+
     args = parser.parse_args()
     if args.bpms and POSITIVE_FLOAT.match(args.bpms):
         args.bpms = "0.0=%s" % args.bpms
@@ -307,6 +347,6 @@ if __name__ == "__main__":
     new_simfile = copy.deepcopy(old_simfile)
     new_simfile.update_bpms(args.offset, args.bpms, args.stops)
     fix_bg_changes(old_simfile, new_simfile)
-    fix_notes(old_simfile, new_simfile, args.snap)
+    fix_notes(old_simfile, new_simfile, args.snap, args.remove_small_holds)
     write_simfile(args.output, new_simfile)
 
